@@ -1,5 +1,5 @@
 // ========================================================
-// 🛰️ SERVER STATION (index.js) - THE ULTIMATE FULL VERSION 🛰️
+// 🛰️ SERVER STATION (index.js) - OFFICIAL FINAL VERSION 🛰️ (Part 1)
 // ========================================================
 
 const express = require('express');
@@ -15,7 +15,6 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// كائنات التخزين الحية المحدثة بفصل قوائم المستخدمين لكل منصة بشكل مستقل
 let appConfig = {
   telegram: { token: '', admin: '', active: false, allowedUsers: [] },
   discord: { token: '', channelId: '', admin: '', active: false, allowedUsers: [] }
@@ -24,11 +23,9 @@ let appConfig = {
 let initTelegramBot = null;
 let initDiscordBot = null;
 
-// فحص وجود الملفات بشكل حيوي ومستقر
 const checkTGFile = () => fs.existsSync(path.join(__dirname, 'telegramBot.js'));
 const checkDCFile = () => fs.existsSync(path.join(__dirname, 'discordBot.js'));
 
-// مسار فحص الحالة النشطة وإرسال قوائم الأعضاء المزامنة للواجهة
 app.get('/api/status', (req, res) => {
   res.json({
     telegram: checkTGFile() ? appConfig.telegram.active : false,
@@ -38,17 +35,10 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-/**
- * 🔓 مسار الويب الرئيسي
- * يفتح دائماً ويعرض واجهة الـ HTML النيون بشكل طبيعي دون حظر أو قفل كلي للبرنامج
- */
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-/**
- * 🖥️ مسار التقاط لقطات الشاشة للـ API
- */
 app.get('/api/screenshot', async (req, res) => {
   try {
     const imgBuffer = await screenshot({ format: 'png' });
@@ -59,12 +49,11 @@ app.get('/api/screenshot', async (req, res) => {
 });
 
 /**
- * 🎯 مسار النقر وتحريك الماوس الفعلي عبر PowerShell بدقة عالية
+ * 🎯 مسار النقر وتحريك الماوس المطور حيوياً لـ إحداثيات البكسل المطلق
  */
 app.post('/api/click', (req, res) => {
   const { x, y, user } = req.body;
 
-  // التحقق من صلاحية المستخدم الحالي تبعا للمنصات والمصفوفات المفصولة
   const isAuthorized = (
     user === "WebConsole_Admin" ||
     user === appConfig.telegram.admin ||
@@ -84,17 +73,66 @@ app.post('/api/click', (req, res) => {
 });
 
 /**
- * ✈️ تفعيل محطة تليجرام وفحص وجود الملف مع إظهار تفاصيل الأخطاء الحية بدقة للعميل
+ * ⌨️ مسار الكتابة البرمجية المطور وحل معضلة اللغات تلقائياً في الويندوز الفعلي
+ */
+app.post('/api/write', (req, res) => {
+  const { text, user } = req.body;
+
+  const isAuthorized = (
+    user === "WebConsole_Admin" ||
+    user === appConfig.telegram.admin ||
+    user === appConfig.discord.admin ||
+    appConfig.telegram.allowedUsers.includes(user) ||
+    appConfig.discord.allowedUsers.includes(user)
+  );
+
+  if (!isAuthorized) return res.status(403).json({ error: "Access Denied" });
+
+  // فحص حركي: هل يحتوي النص المرسل على حروف عربية؟
+  const hasArabic = /[\u0600-\u06FF]/.test(text);
+
+  // تحديد كود اللغة المطلوب حقنه في الويندوز (عربي أو إنجليزي)
+  const langCode = hasArabic ? "00000401" : "00000409";
+
+  // أمر PowerShell المزدوج: يغير لغة الكيبورد فوراً، ثم يحاكي ضغطات الحروف بدقة بالغة
+  const psCommand = `powershell -command "
+    $w = Add-Type -MemberDefinition '[DllImport(\\"user32.dll\\")] public static extern long LoadKeyboardLayout(string pwszKLID, uint Flags);' -Name 'Win32' -Namespace 'Win32Functions' -PassThru;
+    $w::LoadKeyboardLayout('${langCode}', 1) | Out-Null;
+    Add-Type -AssemblyName System.Windows.Forms;
+    [System.Windows.Forms.SendKeys]::SendWait('${text.replace(/[\n\r]/g, "{ENTER}").replace(/'/g, "''")}');
+  "`;
+
+  exec(psCommand, (err) => {
+    if (err) return res.status(500).json({ success: false });
+    res.json({ success: true });
+  });
+});
+
+console.log("⚡ تم بناء مسارات الكيبورد والماوس الذكية للقسم الأول بنجاح ومزامنتها...");
+// ========================================================
+// 🛰️ SERVER STATION (index.js) - OFFICIAL FINAL VERSION 🛰️ (Part 2)
+// ========================================================
+
+/**
+ * ✈️ تفعيل وإيقاف محطة تليجرام حيوياً ومزامنة قلب حالة الزر والنصوص والألوان
  */
 app.post('/api/config/telegram', async (req, res) => {
-  const { token, admin, users } = req.body;
+  const { token, admin, users, action } = req.body;
 
-  // الفحص الصريح: إذا كان ملف البوت محذوفاً يرفض ويرسل رسالة المالك فورا
+  // 🟥 في حالة طلب العميل إيقاف البوت فوراً وتصفير حالته
+  if (action === 'stop') {
+    if (telegramStation && telegramStation.bot) {
+      try { telegramStation.bot.stop(); } catch (e) { }
+    }
+    appConfig.telegram.active = false;
+    return res.json({ success: true, message: "تم إيقاف محطة تليجرام وتصفير العمليات بنجاح! 🛑" });
+  }
+
+  // الفحص الصريح الأضمن للتراخيص: هل ملف البوت محذوف؟
   if (!checkTGFile()) {
     return res.status(400).json({ success: false, error: "أنت لم تقم بشراء هذا البوت يرجى شرائه من المالك @mmx10d" });
   }
 
-  // مزامنة وحفظ قائمة المستخدمين الخاصة بالتليجرام
   appConfig.telegram.allowedUsers = Array.isArray(users) ? users : [];
 
   try {
@@ -115,23 +153,30 @@ app.post('/api/config/telegram', async (req, res) => {
     }
   } catch (error) {
     appConfig.telegram.active = false;
-    // إرسال تفاصيل الخطأ الحقيقية للواجهة ليعرف العميل سبب المشكلة بدقة في الشاشة
     res.status(400).json({ success: false, error: `فشل الاتصال! التفاصيل: ${error.message || "خطأ مجهول في خوادم تليجرام"}` });
   }
 });
 
 /**
- * 💬 تفعيل محطة ديسكورد وفحص وجود الملف مع إظهار تفاصيل الأخطاء الحية حيوياً للعميل
+ * 💬 تفعيل وإيقاف محطة ديسكورد حيوياً ومزامنة قلب حالة الزر والنصوص والألوان
  */
 app.post('/api/config/discord', async (req, res) => {
-  const { token, channelId, admin, users } = req.body;
+  const { token, channelId, admin, users, action } = req.body;
 
-  // الفحص الصريح الأضمن: إذا كان ملف البوت محذوفاً يرفض ويرسل رسالة المالك فورا
+  // 🟥 في حالة طلب العميل إيقاف البوت فوراً وتصفير حالته
+  if (action === 'stop') {
+    if (discordStation && discordStation.client) {
+      try { discordStation.client.destroy(); } catch (e) { }
+    }
+    appConfig.discord.active = false;
+    return res.json({ success: true, message: "تم إيقاف محطة ديسكورد وتدمير جلسة الاتصال بنجاح! 🛑" });
+  }
+
+  // الفحص الصريح الأضمن للتراخيص: هل ملف البوت محذوف؟
   if (!checkDCFile()) {
     return res.status(400).json({ success: false, error: "أنت لم تقم بشراء هذا البوت يرجى شرائه من المالك @mmx10d" });
   }
 
-  // مزامنة وحفظ قائمة المستخدمين الخاصة بالديسكورد لعدم حدوث تداخل
   appConfig.discord.allowedUsers = Array.isArray(users) ? users : [];
 
   try {
@@ -153,7 +198,6 @@ app.post('/api/config/discord', async (req, res) => {
     }
   } catch (error) {
     appConfig.discord.active = false;
-    // إرسال تفاصيل الخطأ الحقيقية ليفهم المشتري سبب المشكلة فوراً (مثل نقص الـ Intents)
     res.status(400).json({ success: false, error: `فشل الاتصال! التفاصيل: ${error.message || "خطأ مجهول في خوادم ديسكورد"}` });
   }
 });
@@ -162,7 +206,7 @@ app.post('/api/config/discord', async (req, res) => {
  * 👥 إضافة مستخدم مصرح له وتحديث الذاكرة الحية لكل منصة بشكل مستقل ومحفوظ
  */
 app.post('/api/users/add', (req, res) => {
-  const { username, platform } = req.body; // استقبال اسم المستخدم والمنصة المستهدفة (tg أو dc)
+  const { username, platform } = req.body;
   const cleanUser = username ? username.trim().replace('@', '') : '';
 
   if (!cleanUser) return res.status(400).json({ success: false });
@@ -182,7 +226,24 @@ app.post('/api/users/add', (req, res) => {
   res.status(400).json({ success: false });
 });
 
-// إقلاع خادم السيرفر التلقائي المخفي للويندوز الأصلي في وضع التطبيق المستقل
+/**
+ * 🗑️ حذف مستخدم مصرح له حيوياً وتحديث مصفوفات البوتات الحية فور ضغط زر الحذف X
+ */
+app.post('/api/users/remove', (req, res) => {
+  const { username, platform } = req.body;
+
+  if (platform === 'tg') {
+    appConfig.telegram.allowedUsers = appConfig.telegram.allowedUsers.filter(u => u !== username);
+    return res.json({ success: true, users: appConfig.telegram.allowedUsers });
+  } else if (platform === 'dc') {
+    appConfig.discord.allowedUsers = appConfig.discord.allowedUsers.filter(u => u !== username);
+    return res.json({ success: true, users: appConfig.discord.allowedUsers });
+  }
+
+  res.status(400).json({ success: false });
+});
+
+// إقلاع خادم السيرفر التلقائي المخفي للويندوز الأصلي بوضعية التطبيق المستقل الآمن
 app.listen(PORT, () => {
   console.log(`\n======================================================`);
   console.log(`📡 CORE HUB STATION ACTIVE ON: http://localhost:${PORT}`);

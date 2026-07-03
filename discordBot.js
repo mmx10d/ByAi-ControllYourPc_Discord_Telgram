@@ -183,9 +183,9 @@ async function initDiscordBot(config, globalAllowedUsers) {
       try {
         const gridImgBuffer = await generateEdgeGridScreen();
         const attachment = new AttachmentBuilder(gridImgBuffer, { name: 'screenshot.png' });
-        await interaction.editReply({
+        await interaction.editReply({ 
           content: `📊 الشاشة الحالية بدقتها الأصلية.\n📏 انظر للمسطرة على الحواف لمعرفة أرقام الـ X والـ Y بدقة (الرقم 1 يعني 100 بكسل...)`,
-          files: [attachment]
+          files: [attachment] 
         });
       } catch (error) {
         console.error("خطأ سحب الصورة:", error);
@@ -215,7 +215,7 @@ async function initDiscordBot(config, globalAllowedUsers) {
           try {
             const freshGridImg = await generateEdgeGridScreen();
             const attachment = new AttachmentBuilder(freshGridImg, { name: 'screenshot.png' });
-
+            
             await interaction.editReply({
               content: `🎯 تم تنفيذ النقرة بنجاح عند X: ${x} | Y: ${y}\nالصورة أعلاه تحدّثت فوراً لتعرض لك النتيجة المحدثة على الشاشة بعد الضغط مباشرة!`,
               files: [attachment]

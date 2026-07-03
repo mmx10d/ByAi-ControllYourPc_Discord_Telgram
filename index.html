@@ -246,6 +246,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      user-select: none;
     }
 
     .btn-success {
@@ -262,7 +263,7 @@
       transform: translateY(-1px);
     }
 
-    /* إدارة المستخدمين الجانبية */
+    /* إدارة المستخدمين الجانبية وزر الحذف النيون ✕ */
     .user-tags {
       display: flex;
       flex-wrap: wrap;
@@ -280,7 +281,23 @@
       color: var(--neon-green);
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .remove-user-btn {
+      color: var(--neon-red);
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: 0.2s;
+      display: inline-block;
+      padding: 0 2px;
+    }
+
+    .remove-user-btn:hover {
+      transform: scale(1.2);
+      text-shadow: 0 0 8px var(--neon-red);
     }
 
     /* 🔒 تصميم النوافذ المنبثقة المخصصة الفاخرة */
@@ -353,7 +370,7 @@
     <h1 id="txtMainTitle">Advanced Station Management Center 🛰️</h1>
     <button class="lang-btn" id="langToggleBtn" onclick="switchLanguage()">العربية 🌐</button>
   </div>
-  <!-- لوحة البث الأساسية وعرض الشاشة الحية للمشروع -->
+
   <div class="station-title">
     <span id="txtStationTitle">Main Station: Advanced Display & Live Stream Panel</span>
     <div class="status-container">
@@ -361,506 +378,570 @@
       <span class="status-dot online"></span>
     </div>
   </div>
-
-  <div class="station-grid">
-    <!-- الجزء الأول: شاشة العرض الحية ومتحكمات الـ FPS ومعدلات البث -->
-    <div class="station-part">
-      <div class="controls-bar">
-        <button class="btn btn-success" id="btnManualRefresh" onclick="fetchScreenshot()">Manual Refresh 🔄</button>
-
-        <select id="fpsSelect" onchange="handleFPSChange()">
-          <option value="stop" id="optFpsStop">Stop Auto Refresh 🛑</option>
-          <option value="30" id="optFps30">30 FPS (Every 33ms) ⚡</option>
-          <option value="60" id="optFps60">60 FPS (Every 16ms) 🔥</option>
-          <option value="custom" id="optFpsCustom">Custom Refresh Rate ⚙️</option>
-        </select>
-
-        <input type="number" id="customMs" placeholder="الملي ثانية (ms)" style="display:none; width:120px;"
-          oninput="handleCustomMsInput()">
-      </div>
-
-      <div class="screen-box">
-        <img id="screenView" src="" alt="شاشة الكمبيوتر الفعلي ستظهر هنا..." onclick="sendClick(event)">
-      </div>
-    </div>
-    <!-- الجزء الثاني: نماذج إعدادات المنصات، وبوابات التفعيل، وقوائم التحكم الجماعي -->
-    <div class="station-part">
-      <h3
-        style="margin-top: 0; color: var(--neon-green); display: flex; justify-content: space-between; align-items: center;">
-        <span id="txtSettingsTitle">⚙️ Settings & Security Gateways</span>
-        <button class="btn btn-danger" id="btnDeleteStorage" style="padding: 6px 12px; font-size: 11px;"
-          onclick="showDeleteConfirm()">Clear Cache 🗑️</button>
-      </h3>
-
-      <div style="margin-bottom: 20px;">
-        <label style="font-size: 13px; color: #a0aec0;" id="txtSelectPlatformLabel">Select Current Platform
-          Interface:</label>
-        <div style="display: flex; gap: 10px; margin-top: 8px;">
-          <button class="btn" style="background: #0088cc; flex: 1; justify-content: space-between;"
-            onclick="toggleBotForm('tg')">
-            <span>Telegram Bot</span>
-            <span class="status-dot" id="tgLed"></span>
-          </button>
-          <button class="btn" style="background: #5865F2; flex: 1; justify-content: space-between;"
-            onclick="toggleBotForm('dc')">
-            <span>Discord Bot</span>
-            <span class="status-dot" id="dcLed"></span>
-          </button>
-        </div>
-      </div>
-
-      <!-- بوابات وخانات إعدادات محطة التليجرام الفعالة -->
-      <div id="tgFormSection">
-        <div class="form-group">
-          <label id="lblTgAdmin">Telegram Admin Username (Without @):</label>
-          <input type="text" id="tgAdmin" placeholder="e.g. Homam_Dev">
-        </div>
-        <div class="form-group">
-          <label id="lblTgToken">Telegram Bot Token:</label>
-          <div class="input-wrapper">
-            <input type="password" id="tgToken" placeholder="From BotFather">
-            <span class="toggle-pwd-btn" id="btnToggleTgToken" onclick="togglePassword('tgToken', this)">👁️ Show
-              Token</span>
+      <div class="station-grid">
+        <!-- الجزء الأول: شاشة العرض الحية ومتحكمات الـ FPS ومعدلات البث -->
+        <div class="station-part">
+          <div class="controls-bar">
+            <button class="btn btn-success" id="btnManualRefresh" onclick="fetchScreenshot()">Manual Refresh 🔄</button>
+      
+            <select id="fpsSelect" onchange="handleFPSChange()">
+              <option value="stop" id="optFpsStop">Stop Auto Refresh 🛑</option>
+              <option value="30" id="optFps30">30 FPS (Every 33ms) ⚡</option>
+              <option value="60" id="optFps60">60 FPS (Every 16ms) 🔥</option>
+              <option value="custom" id="optFpsCustom">Custom Refresh Rate ⚙️</option>
+            </select>
+      
+            <input type="number" id="customMs" placeholder="الملي ثانية (ms)" style="display:none; width:120px;"
+              oninput="handleCustomMsInput()">
+          </div>
+      
+          <div class="screen-box">
+            <img id="screenView" src="" alt="شاشة الكمبيوتر الفعلي ستظهر هنا..." onclick="sendClick(event)">
           </div>
         </div>
-        <button class="btn" style="background:#0088cc; width: 100%;" id="btnActivateTg"
-          onclick="connectTelegram()">Activate
-          Telegram Station 🚀</button>
-      </div>
-
-      <!-- بوابات وخانات إعدادات محطة الديسكورد الفعالة -->
-      <div id="dcFormSection" style="display:none;">
-        <div class="form-group">
-          <label id="lblDcAdmin">Discord Admin Username:</label>
-          <input type="text" id="dcAdmin" placeholder="e.g. homam_king">
-        </div>
-        <div class="form-group">
-          <label id="lblDcToken">Discord Bot Token:</label>
-          <div class="input-wrapper">
-            <input type="password" id="dcToken" placeholder="From Developer Portal">
-            <span class="toggle-pwd-btn" id="btnToggleDcToken" onclick="togglePassword('dcToken', this)">👁️ Show
-              Token</span>
+      
+        <!-- الجزء الثاني: نماذج إعدادات المنصات، أزرار التبديل الحية، وقوائم التحكم الجماعي -->
+        <div class="station-part">
+          <h3
+            style="margin-top: 0; color: var(--neon-green); display: flex; justify-content: space-between; align-items: center;">
+            <span id="txtSettingsTitle">⚙️ Settings & Security Gateways</span>
+            <button class="btn btn-danger" id="btnDeleteStorage" style="padding: 6px 12px; font-size: 11px;"
+              onclick="showDeleteConfirm()">Clear Cache 🗑️</button>
+          </h3>
+      
+          <div style="margin-bottom: 20px;">
+            <label style="font-size: 13px; color: #a0aec0;" id="txtSelectPlatformLabel">Select Current Platform
+              Interface:</label>
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button class="btn" style="background: #0088cc; flex: 1; justify-content: space-between;"
+                onclick="toggleBotForm('tg')">
+                <span>Telegram Bot</span>
+                <span class="status-dot" id="tgLed"></span>
+              </button>
+              <button class="btn" style="background: #5865F2; flex: 1; justify-content: space-between;"
+                onclick="toggleBotForm('dc')">
+                <span>Discord Bot</span>
+                <span class="status-dot" id="dcLed"></span>
+              </button>
+            </div>
+          </div>
+      
+          <!-- بوابات وخانات إعدادات محطة التليجرام الفعالة -->
+          <div id="tgFormSection">
+            <div class="form-group">
+              <label id="lblTgAdmin">Telegram Admin Username (Without @):</label>
+              <input type="text" id="tgAdmin" placeholder="e.g. Homam_Dev">
+            </div>
+            <div class="form-group">
+              <label id="lblTgToken">Telegram Bot Token:</label>
+              <div class="input-wrapper">
+                <input type="password" id="tgToken" placeholder="From BotFather">
+                <span class="toggle-pwd-btn" id="btnToggleTgToken" onclick="togglePassword('tgToken', this)">👁️ Show
+                  Token</span>
+              </div>
+            </div>
+            <button class="btn btn-success" style="width: 100%;" id="btnActivateTg" onclick="connectTelegram()">Activate
+              Telegram Station 🚀</button>
+          </div>
+      
+          <!-- بوابات وخانات إعدادات محطة الديسكورد الفعالة -->
+          <div id="dcFormSection" style="display:none;">
+            <div class="form-group">
+              <label id="lblDcAdmin">Discord Admin Username:</label>
+              <input type="text" id="dcAdmin" placeholder="e.g. homam_king">
+            </div>
+            <div class="form-group">
+              <label id="lblDcToken">Discord Bot Token:</label>
+              <div class="input-wrapper">
+                <input type="password" id="dcToken" placeholder="From Developer Portal">
+                <span class="toggle-pwd-btn" id="btnToggleDcToken" onclick="togglePassword('dcToken', this)">👁️ Show
+                  Token</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label id="lblDcChannel">Channel ID (Optional for protected room):</label>
+              <input type="text" id="dcChannel" placeholder="Leave empty for all channels">
+            </div>
+            <button class="btn btn-success" style="width: 100%;" id="btnActivateDc" onclick="connectDiscord()">Activate
+              Discord Station 🚀</button>
+          </div>
+      
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 25px 0;">
+      
+          <!-- نظام إدارة وإضافة المستخدمين المصرح لهم تتبعاً للمنصة المحددة -->
+          <div id="userManagementSection">
+            <h4 style="margin: 0 0 10px 0;" id="userListTitle">👥 Allowed Telegram Station Users</h4>
+            <div style="display:flex; gap:5px;">
+              <input type="text" id="newAllowedUser" placeholder="Authorized username for control" style="flex:1;">
+              <button class="btn btn-success" style="width:auto; padding: 0 20px;" id="btnAddUser"
+                onclick="addUser()">Add</button>
+            </div>
+            <div class="user-tags" id="allowedUsersList"></div>
           </div>
         </div>
-        <div class="form-group">
-          <label id="lblDcChannel">Channel ID (Optional for protected room):</label>
-          <input type="text" id="dcChannel" placeholder="Leave empty for all channels">
+      </div>
+      
+      <!-- 🔒 نظام النوافذ المنبثقة المخصصة الفاخرة (Custom Modals) للتنبيهات الحركية -->
+      <div class="modal-overlay" id="customAlert">
+        <div class="modal-box">
+          <h3 id="alertTitle" style="color: var(--neon-green);">System Alert</h3>
+          <p id="alertMessage">Default alert message...</p>
+          <button class="btn btn-success" style="width: 120px;" id="btnAlertClose" onclick="closeAlert()">OK</button>
         </div>
-        <button class="btn" style="background:#5865F2; width: 100%;" id="btnActivateDc"
-          onclick="connectDiscord()">Activate
-          Discord Station 🚀</button>
       </div>
-
-      <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 25px 0;">
-
-      <!-- نظام إدارة وإضافة المستخدمين المصرح لهم تتبعاً للمنصة المحددة -->
-      <div id="userManagementSection">
-        <h4 style="margin: 0 0 10px 0;" id="userListTitle">👥 Allowed Telegram Station Users</h4>
-        <div style="display:flex; gap:5px;">
-          <input type="text" id="newAllowedUser" placeholder="Authorized username for control">
-          <button class="btn btn-success" style="width:auto; padding: 0 20px;" id="btnAddUser"
-            onclick="addUser()">Add</button>
+      
+      <div class="modal-overlay" id="customConfirm">
+        <div class="modal-box">
+          <h3 style="color: var(--neon-red);" id="txtConfirmTitle">⚠️ Confirm Clearing Cache</h3>
+          <p id="txtConfirmBody">Are you absolutely sure you want to clear all stored data and users? This will reset the
+            input fields entirely.</p>
+          <div class="modal-buttons">
+            <button class="btn btn-danger" id="btnConfirmYes" onclick="confirmDeleteData()">Yes, Clear</button>
+            <button class="btn" style="background: #4a5568;" id="btnConfirmNo" onclick="closeConfirm()">Cancel</button>
+          </div>
         </div>
-        <div class="user-tags" id="allowedUsersList"></div>
       </div>
-    </div>
-  </div>
+          <!-- 🧠 محرك التشغيل، التخزين التلقائي، والربط الحي بالشبكة (JavaScript) - الجزء الثالث (القسم الأول) -->
+          <script>
+            let streamInterval = null;
+            let currentPlatform = 'tg';
+            let currentLang = 'en'; // التثبيت الافتراضي: تفتح الصفحة تلقائياً بالإنجليزية للمشترين
 
-  <!-- 🔒 نظام النوافذ المنبثقة المخصصة الفاخرة (Custom Modals) للتنبيهات الحركية -->
-  <div class="modal-overlay" id="customAlert">
-    <div class="modal-box">
-      <h3 id="alertTitle" style="color: var(--neon-green);">System Alert</h3>
-      <p id="alertMessage">Default alert message...</p>
-      <button class="btn btn-success" style="width: 120px;" id="btnAlertClose" onclick="closeAlert()">OK</button>
-    </div>
-  </div>
+            let tgCachedUsers = [];
+            let dcUserCachedUsers = [];
+            let isTgBotOnline = false;
+            let isDcBotOnline = false;
 
-  <div class="modal-overlay" id="customConfirm">
-    <div class="modal-box">
-      <h3 style="color: var(--neon-red);" id="txtConfirmTitle">⚠️ Confirm Clearing Cache</h3>
-      <p id="txtConfirmBody">Are you absolutely sure you want to clear all stored data and users? This will reset the
-        input fields entirely.</p>
-      <div class="modal-buttons">
-        <button class="btn btn-danger" id="btnConfirmYes" onclick="confirmDeleteData()">Yes, Clear</button>
-        <button class="btn" style="background: #4a5568;" id="btnConfirmNo" onclick="closeConfirm()">Cancel</button>
-      </div>
-    </div>
-  </div>
-  <!-- 🧠 محرك التشغيل، التخزين التلقائي، والربط الحي بالشبكة (JavaScript) - الجزء الخامس من 6 -->
-  <script>
-    let streamInterval = null;
-    let currentPlatform = 'tg';
-    let currentLang = 'en'; // 🌟 التثبيت الافتراضي: تفتح الصفحة تلقائياً باللغة الإنجليزية للمشترين
+            // 🌐 قاموس اللغات الشامل والموحد لترجمة النصوص ديناميكياً مع الحفاظ على القالب البصري
+            const i18n = {
+              ar: {
+                txtMainTitle: "مركز إدارة المحطات الخلفية المتطورة 🛰️",
+                langToggleBtn: "English 🌐",
+                txtStationTitle: "المحطة الرئيسية: لوحة العرض والبث المباشر المطور",
+                txtCentralStatusLabel: "حالة الاتصال المركزي:",
+                btnManualRefresh: "تحديث يدوي 🔄",
+                optFpsStop: "إيقاف التحديث التلقائي 🛑",
+                optFps30: "30 إطار في الثانية (كل 33ms) ⚡",
+                optFps60: "60 إطار في الثانية (كل 16ms) 🔥",
+                optFpsCustom: "معدل تحديث مخصص ⚙️",
+                txtSettingsTitle: "⚙️ الإعدادات وبوابات الحماية",
+                btnDeleteStorage: "حذف التخزين 🗑️",
+                txtSelectPlatformLabel: "اختر محطة الإدخال والربط الحالية:",
+                lblTgAdmin: "اسم مستخدم أدمن التليجرام (بدون @):",
+                lblTgToken: "توكن بوت التليجرام (Bot Token):",
+                btnToggleTgToken_show: "👁️ إظهار التوكن",
+                btnToggleTgToken_hide: "🔒 إخفاء التوكن",
+                btnActivateTg_start: "تفعيل محطة تليجرام 🚀",
+                btnActivateTg_stop: "إيقاف محطة تليجرام 🛑",
+                lblDcAdmin: "اسم مستخدم أدمن الديسكورد:",
+                lblDcToken: "توكن بوت الديسكورد (Bot Token):",
+                btnToggleDcToken_show: "👁️ إظهار التوكن",
+                btnToggleDcToken_hide: "🔒 إخفاء التوكن",
+                lblDcChannel: "رقم القناة ID (اختياري للروم المحمي):",
+                btnActivateDc_start: "تفعيل محطة ديسكورد 🚀",
+                btnActivateDc_stop: "إيقاف محطة ديسكورد 🛑",
+                userListTitle_tg: "👥 مستخدمي محطة تليجرام المصرح لهم",
+                userListTitle_dc: "👥 مستخدمي محطة ديسكورد المصرح لهم",
+                newAllowedUser: "اسم مستخدم مصرح له بالتحكم",
+                btnAddUser: "إضافة",
+                btnAlertClose: "حسناً",
+                txtConfirmTitle: "⚠️ تأكيد حذف التخزين",
+                txtConfirmBody: "هل أنت متأكد تماماً من رغبتك في مسح كافة البيانات والمستخدمين المحفوظين؟ سيؤدي ذلك لإعادة تعيين خانات الإدخال بالكامل.",
+                btnConfirmYes: "نعم، احذف",
+                btnConfirmNo: "إلغاء",
+                alert_delete_title: "تم الحذف بنجاح",
+                alert_delete_body: "تم تصفير الـ LocalStorage وكافة القوائم بنجاح.",
+                alert_success_title: "تم التفعيل بنجاح",
+                alert_fail_title: "فشل التفعيل"
+              },
+              en: {
+                txtMainTitle: "Advanced Station Management Center 🛰️",
+                langToggleBtn: "العربية 🌐",
+                txtStationTitle: "Main Station: Advanced Display & Live Stream Panel",
+                txtCentralStatusLabel: "Central Connection Status:",
+                btnManualRefresh: "Manual Refresh 🔄",
+                optFpsStop: "Stop Auto Refresh 🛑",
+                optFps30: "30 FPS (Every 33ms) ⚡",
+                optFps60: "60 FPS (Every 16ms) 🔥",
+                optFpsCustom: "Custom Refresh Rate ⚙️",
+                txtSettingsTitle: "⚙️ Settings & Security Gateways",
+                btnDeleteStorage: "Clear Cache 🗑️",
+                txtSelectPlatformLabel: "Select Current Platform Interface:",
+                lblTgAdmin: "Telegram Admin Username (Without @):",
+                lblTgToken: "Telegram Bot Token:",
+                btnToggleTgToken_show: "👁️ Show Token",
+                btnToggleTgToken_hide: "🔒 Hide Token",
+                btnActivateTg_start: "Activate Telegram Station 🚀",
+                btnActivateTg_stop: "Stop Telegram Station 🛑",
+                lblDcAdmin: "Discord Admin Username:",
+                lblDcToken: "Discord Bot Token:",
+                btnToggleDcToken_show: "👁️ Show Token",
+                btnToggleDcToken_hide: "🔒 Hide Token",
+                lblDcChannel: "Channel ID (Optional for protected room):",
+                btnActivateDc_start: "Activate Discord Station 🚀",
+                btnActivateDc_stop: "Stop Discord Station 🛑",
+                userListTitle_tg: "👥 Allowed Telegram Station Users",
+                userListTitle_dc: "👥 Allowed Discord Station Users",
+                newAllowedUser: "Authorized username for control",
+                btnAddUser: "Add",
+                btnAlertClose: "OK",
+                txtConfirmTitle: "⚠️ Confirm Clearing Cache",
+                txtConfirmBody: "Are you absolutely sure you want to clear all stored data and users? This will reset the input fields entirely.",
+                btnConfirmYes: "Yes, Clear",
+                btnConfirmNo: "Cancel",
+                alert_delete_title: "Cleared Successfully",
+                alert_delete_body: "LocalStorage and all active lists have been reset successfully.",
+                alert_success_title: "Activated Successfully",
+                alert_fail_title: "Activation Failed"
+              }
+            };
+                    // 🌟 دالة حقن الترجمة وإصلاح مظهر ونصوص أزرار (التشغيل / الإيقاف) حركياً تزامناً مع اللغات والاتجاهات
+                      function updateInterfaceStrings() {
+                        const htmlNode = document.getElementById('mainHtml');
+                        const lang = currentLang;
 
-    let tgCachedUsers = [];
-    let dcUserCachedUsers = [];
+                        htmlNode.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                        htmlNode.lang = lang;
 
-    // 🌐 قاموس اللغات الشامل والموحد للمشروع لترجمة النصوص دون التأثير على قالب التصميم
-    const i18n = {
-      ar: {
-        txtMainTitle: "مركز إدارة المحطات الخلفية المتطورة 🛰️",
-        langToggleBtn: "English 🌐",
-        txtStationTitle: "المحطة الرئيسية: لوحة العرض والبث المباشر المطور",
-        txtCentralStatusLabel: "حالة الاتصال المركزي:",
-        btnManualRefresh: "تحديث يدوي 🔄",
-        optFpsStop: "إيقاف التحديث التلقائي 🛑",
-        optFps30: "30 إطار في الثانية (كل 33ms) ⚡",
-        optFps60: "60 إطار في الثانية (كل 16ms) 🔥",
-        optFpsCustom: "معدل تحديث مخصص ⚙️",
-        txtSettingsTitle: "⚙️ الإعدادات وبوابات الحماية",
-        btnDeleteStorage: "حذف التخزين 🗑️",
-        txtSelectPlatformLabel: "اختر محطة الإدخال والربط الحالية:",
-        lblTgAdmin: "اسم مستخدم أدمن التليجرام (بدون @):",
-        lblTgToken: "توكن بوت التليجرام (Bot Token):",
-        btnToggleTgToken_show: "👁️ إظهار التوكن",
-        btnToggleTgToken_hide: "🔒 إخفاء التوكن",
-        btnActivateTg: "تفعيل محطة تليجرام 🚀",
-        lblDcAdmin: "اسم مستخدم أدمن الديسكورد:",
-        lblDcToken: "توكن بوت الديسكورد (Bot Token):",
-        btnToggleDcToken_show: "👁️ إظهار التوكن",
-        btnToggleDcToken_hide: "🔒 إخفاء التوكن",
-        lblDcChannel: "رقم القناة ID (اختياري للروم المحمي):",
-        btnActivateDc: "تفعيل محطة ديسكورد 🚀",
-        userListTitle_tg: "👥 مستخدمي محطة تليجرام المصرح لهم",
-        userListTitle_dc: "👥 مستخدمي محطة ديسكورد المصرح لهم",
-        newAllowedUser: "اسم مستخدم مصرح له بالتحكم",
-        btnAddUser: "إضافة",
-        btnAlertClose: "حسناً",
-        txtConfirmTitle: "⚠️ تأكيد حذف التخزين",
-        txtConfirmBody: "هل أنت متأكد تماماً من رغبتك في مسح كافة البيانات والمستخدمين المحفوظين؟ سيؤدي ذلك لإعادة تعيين خانات الإدخال بالكامل.",
-        btnConfirmYes: "نعم، احذف",
-        btnConfirmNo: "إلغاء",
-        alert_delete_title: "تم الحذف بنجاح",
-        alert_delete_body: "تم تصفير الـ LocalStorage وكافة القوائم بنجاح.",
-        alert_success_title: "تم التفعيل بنجاح",
-        alert_fail_title: "فشل التفعيل"
-      },
-      en: {
-        txtMainTitle: "Advanced Station Management Center 🛰️",
-        langToggleBtn: "العربية 🌐",
-        txtStationTitle: "Main Station: Advanced Display & Live Stream Panel",
-        txtCentralStatusLabel: "Central Connection Status:",
-        btnManualRefresh: "Manual Refresh 🔄",
-        optFpsStop: "Stop Auto Refresh 🛑",
-        optFps30: "30 FPS (Every 33ms) ⚡",
-        optFps60: "60 FPS (Every 16ms) 🔥",
-        optFpsCustom: "Custom Refresh Rate ⚙️",
-        txtSettingsTitle: "⚙️ Settings & Security Gateways",
-        btnDeleteStorage: "Clear Cache 🗑️",
-        txtSelectPlatformLabel: "Select Current Platform Interface:",
-        lblTgAdmin: "Telegram Admin Username (Without @):",
-        lblTgToken: "Telegram Bot Token:",
-        btnToggleTgToken_show: "👁️ Show Token",
-        btnToggleTgToken_hide: "🔒 Hide Token",
-        btnActivateTg: "Activate Telegram Station 🚀",
-        lblDcAdmin: "Discord Admin Username:",
-        lblDcToken: "Discord Bot Token:",
-        btnToggleDcToken_show: "👁️ Show Token",
-        btnToggleDcToken_hide: "🔒 Hide Token",
-        lblDcChannel: "Channel ID (Optional for protected room):",
-        btnActivateDc: "Activate Discord Station 🚀",
-        userListTitle_tg: "👥 Allowed Telegram Station Users",
-        userListTitle_dc: "👥 Allowed Discord Station Users",
-        newAllowedUser: "Authorized username for control",
-        btnAddUser: "Add",
-        btnAlertClose: "OK",
-        txtConfirmTitle: "⚠️ Confirm Clearing Cache",
-        txtConfirmBody: "Are you absolutely sure you want to clear all stored data and users? This will reset the input fields entirely.",
-        btnConfirmYes: "Yes, Clear",
-        btnConfirmNo: "Cancel",
-        alert_delete_title: "Cleared Successfully",
-        alert_delete_body: "LocalStorage and all active lists have been reset successfully.",
-        alert_success_title: "Activated Successfully",
-        alert_fail_title: "Activation Failed"
-      }
-    };
+                        document.getElementById('txtMainTitle').innerText = i18n[lang].txtMainTitle;
+                        document.getElementById('langToggleBtn').innerText = i18n[lang].langToggleBtn;
+                        document.getElementById('txtStationTitle').innerText = i18n[lang].txtStationTitle;
+                        document.getElementById('txtCentralStatusLabel').innerText = i18n[lang].txtCentralStatusLabel;
+                        document.getElementById('btnManualRefresh').innerText = i18n[lang].btnManualRefresh;
+                        document.getElementById('optFpsStop').innerText = i18n[lang].optFpsStop;
+                        document.getElementById('optFps30').innerText = i18n[lang].optFps30;
+                        document.getElementById('optFps60').innerText = i18n[lang].optFps60;
+                        document.getElementById('optFpsCustom').innerText = i18n[lang].optFpsCustom;
+                        document.getElementById('txtSettingsTitle').innerText = i18n[lang].txtSettingsTitle;
+                        document.getElementById('btnDeleteStorage').innerText = i18n[lang].btnDeleteStorage;
+                        document.getElementById('txtSelectPlatformLabel').innerText = i18n[lang].txtSelectPlatformLabel;
+                        document.getElementById('lblTgAdmin').innerText = i18n[lang].lblTgAdmin;
+                        document.getElementById('lblTgToken').innerText = i18n[lang].lblTgToken;
+                        document.getElementById('lblDcAdmin').innerText = i18n[lang].lblDcAdmin;
+                        document.getElementById('lblDcToken').innerText = i18n[lang].lblDcToken;
+                        document.getElementById('lblDcChannel').innerText = i18n[lang].lblDcChannel;
+                        document.getElementById('btnAddUser').innerText = i18n[lang].btnAddUser;
+                        document.getElementById('btnAlertClose').innerText = i18n[lang].btnAlertClose;
+                        document.getElementById('txtConfirmTitle').innerText = i18n[lang].txtConfirmTitle;
+                        document.getElementById('txtConfirmBody').innerText = i18n[lang].txtConfirmBody;
+                        document.getElementById('btnConfirmYes').innerText = i18n[lang].btnConfirmYes;
+                        document.getElementById('btnConfirmNo').innerText = i18n[lang].btnConfirmNo;
+                        document.getElementById('newAllowedUser').placeholder = i18n[lang].newAllowedUser;
 
-    // 🌟 دالة حقن الترجمة وإصلاح مظهر زر إظهار التوكن ديناميكياً تزامناً مع اللغات والاتجاهات البصرية
-    function updateInterfaceStrings() {
-      const htmlNode = document.getElementById('mainHtml');
-      const lang = currentLang;
+                        // 🟥 تحويل أشكال وألوان ونصوص أزرار تليجرام حيوياً تبعاً لحالة السيرفر
+                        const btnTg = document.getElementById('btnActivateTg');
+                        if (isTgBotOnline) {
+                          btnTg.innerText = i18n[lang].btnActivateTg_stop;
+                          btnTg.className = "btn btn-danger";
+                        } else {
+                          btnTg.innerText = i18n[lang].btnActivateTg_start;
+                          btnTg.className = "btn btn-success";
+                        }
 
-      // قراءة وقلب الاتجاه البرمجي ديناميكياً تتبعاً للغة العميل (RTL / LTR)
-      htmlNode.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      htmlNode.lang = lang;
+                        // 🟥 تحويل أشكال وألوان ونصوص أزرار ديسكورد حيوياً تبعاً لحالة السيرفر
+                        const btnDc = document.getElementById('btnActivateDc');
+                        if (isDcBotOnline) {
+                          btnDc.innerText = i18n[lang].btnActivateDc_stop;
+                          btnDc.className = "btn btn-danger";
+                        } else {
+                          btnDc.innerText = i18n[lang].btnActivateDc_start;
+                          btnDc.className = "btn btn-success";
+                        }
 
-      // تحديث نصوص الواجهة بالكامل بناءً على معرفاتها المجهزة بالقاموس
-      document.getElementById('txtMainTitle').innerText = i18n[lang].txtMainTitle;
-      document.getElementById('langToggleBtn').innerText = i18n[lang].langToggleBtn;
-      document.getElementById('txtStationTitle').innerText = i18n[lang].txtStationTitle;
-      document.getElementById('txtCentralStatusLabel').innerText = i18n[lang].txtCentralStatusLabel;
-      document.getElementById('btnManualRefresh').innerText = i18n[lang].btnManualRefresh;
-      document.getElementById('optFpsStop').innerText = i18n[lang].optFpsStop;
-      document.getElementById('optFps30').innerText = i18n[lang].optFps30;
-      document.getElementById('optFps60').innerText = i18n[lang].optFps60;
-      document.getElementById('optFpsCustom').innerText = i18n[lang].optFpsCustom;
-      document.getElementById('txtSettingsTitle').innerText = i18n[lang].txtSettingsTitle;
-      document.getElementById('btnDeleteStorage').innerText = i18n[lang].btnDeleteStorage;
-      document.getElementById('txtSelectPlatformLabel').innerText = i18n[lang].txtSelectPlatformLabel;
-      document.getElementById('lblTgAdmin').innerText = i18n[lang].lblTgAdmin;
-      document.getElementById('lblTgToken').innerText = i18n[lang].lblTgToken;
-      document.getElementById('btnActivateTg').innerText = i18n[lang].btnActivateTg;
-      document.getElementById('lblDcAdmin').innerText = i18n[lang].lblDcAdmin;
-      document.getElementById('lblDcToken').innerText = i18n[lang].lblDcToken;
-      document.getElementById('lblDcChannel').innerText = i18n[lang].lblDcChannel;
-      document.getElementById('btnActivateDc').innerText = i18n[lang].btnActivateDc;
-      document.getElementById('btnAddUser').innerText = i18n[lang].btnAddUser;
-      document.getElementById('btnAlertClose').innerText = i18n[lang].btnAlertClose;
-      document.getElementById('txtConfirmTitle').innerText = i18n[lang].txtConfirmTitle;
-      document.getElementById('txtConfirmBody').innerText = i18n[lang].txtConfirmBody;
-      document.getElementById('btnConfirmYes').innerText = i18n[lang].btnConfirmYes;
-      document.getElementById('btnConfirmNo').innerText = i18n[lang].btnConfirmNo;
-      document.getElementById('newAllowedUser').placeholder = i18n[lang].newAllowedUser;
+                        const isTgTokenVisible = document.getElementById('tgToken').type === 'text';
+                        document.getElementById('btnToggleTgToken').innerText = isTgTokenVisible ? i18n[lang].btnToggleTgToken_hide : i18n[lang].btnToggleTgToken_show;
 
-      // 🛠️ الإصلاح الحاسم: مزامنة حالة نصوص أزرار إظهار التوكنات المخفية تزامناً مع حالة الحقل ونوع اللغة الحالي
-      const isTgTokenVisible = document.getElementById('tgToken').type === 'text';
-      document.getElementById('btnToggleTgToken').innerText = isTgTokenVisible ? i18n[lang].btnToggleTgToken_hide : i18n[lang].btnToggleTgToken_show;
+                        const isDcTokenVisible = document.getElementById('dcToken').type === 'text';
+                        document.getElementById('btnToggleDcToken').innerText = isDcTokenVisible ? i18n[lang].btnToggleDcToken_hide : i18n[lang].btnToggleDcToken_show;
 
-      const isDcTokenVisible = document.getElementById('dcToken').type === 'text';
-      document.getElementById('btnToggleDcToken').innerText = isDcTokenVisible ? i18n[lang].btnToggleDcToken_hide : i18n[lang].btnToggleDcToken_show;
+                        const title = document.getElementById('userListTitle');
+                        title.innerText = currentPlatform === 'tg' ? i18n[lang].userListTitle_tg : i18n[lang].userListTitle_dc;
+                      }
 
-      const title = document.getElementById('userListTitle');
-      title.innerText = currentPlatform === 'tg' ? i18n[lang].userListTitle_tg : i18n[lang].userListTitle_dc;
-    }
+                      // دالة الـ Toggle الحركية المحدثة لمنع تجمد أزرار كشف المعاينة
+                      function togglePassword(inputId, btn) {
+                        const inputField = document.getElementById(inputId);
+                        const isTelegramField = inputId === 'tgToken';
 
-    // 🛠️ الإصلاح البرمجي الجوهري: دالة الـ Toggle الحركية المحدثة لإجبار الحقل والزر على التبديل دون أي تجمد
-    function togglePassword(inputId, btn) {
-      const inputField = document.getElementById(inputId);
-      const isTelegramField = inputId === 'tgToken';
+                        if (inputField.type === "password") {
+                          inputField.type = "text";
+                          btn.innerText = i18n[currentLang][isTelegramField ? 'btnToggleTgToken_hide' : 'btnToggleDcToken_hide'];
+                        } else {
+                          inputField.type = "password";
+                          btn.innerText = i18n[currentLang][isTelegramField ? 'btnToggleTgToken_show' : 'btnToggleDcToken_show'];
+                        }
+                      }
 
-      if (inputField.type === "password") {
-        inputField.type = "text";
-        btn.innerText = i18n[currentLang][isTelegramField ? 'btnToggleTgToken_hide' : 'btnToggleDcToken_hide'];
-      } else {
-        inputField.type = "password";
-        btn.innerText = i18n[currentLang][isTelegramField ? 'btnToggleTgToken_show' : 'btnToggleDcToken_show'];
-      }
-    }
+                      function switchLanguage() {
+                        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+                        localStorage.setItem('currentLang', currentLang);
+                        updateInterfaceStrings();
+                      }
+                            // 1. نظام المزامنة والتحميل التلقائي لكافة الخانات والمستخدمين المحفوظين فور فتح الصفحة
+                              window.addEventListener('load', () => {
+                                if (localStorage.getItem('currentLang')) currentLang = localStorage.getItem('currentLang');
 
-    function switchLanguage() {
-      currentLang = currentLang === 'ar' ? 'en' : 'ar';
-      localStorage.setItem('currentLang', currentLang);
-      updateInterfaceStrings();
-    }
-    // 1. نظام المزامنة والتحميل التلقائي لكافة الخانات والمستخدمين المحفوظين فور فتح الصفحة
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('currentLang')) currentLang = localStorage.getItem('currentLang');
-      updateInterfaceStrings(); // تطبيق اتجاه ونصوص اللغة المعتمدة فوراً قبل التحميل البصري
+                                // استرجاع المدخلات المحفوظة وضمان نزولها بالخانات تلقائياً
+                                if (localStorage.getItem('tgAdmin')) document.getElementById('tgAdmin').value = localStorage.getItem('tgAdmin');
+                                if (localStorage.getItem('tgToken')) document.getElementById('tgToken').value = localStorage.getItem('tgToken');
+                                if (localStorage.getItem('dcAdmin')) document.getElementById('dcAdmin').value = localStorage.getItem('dcAdmin');
+                                if (localStorage.getItem('dcToken')) document.getElementById('dcToken').value = localStorage.getItem('dcToken');
+                                if (localStorage.getItem('dcChannel')) document.getElementById('dcChannel').value = localStorage.getItem('dcChannel');
 
-      // استرجاع المدخلات المحفوظة وضمان نزولها بالخانات تلقائياً
-      if (localStorage.getItem('tgAdmin')) document.getElementById('tgAdmin').value = localStorage.getItem('tgAdmin');
-      if (localStorage.getItem('tgToken')) document.getElementById('tgToken').value = localStorage.getItem('tgToken');
-      if (localStorage.getItem('dcAdmin')) document.getElementById('dcAdmin').value = localStorage.getItem('dcAdmin');
-      if (localStorage.getItem('dcToken')) document.getElementById('dcToken').value = localStorage.getItem('dcToken');
-      if (localStorage.getItem('dcChannel')) document.getElementById('dcChannel').value = localStorage.getItem('dcChannel');
+                                // استرجاع مصفوفات المجموعات المصرح لها حيوياً لكل منصة
+                                if (localStorage.getItem('tgCachedUsers')) tgCachedUsers = JSON.parse(localStorage.getItem('tgCachedUsers'));
+                                if (localStorage.getItem('dcUserCachedUsers')) dcUserCachedUsers = JSON.parse(localStorage.getItem('dcUserCachedUsers'));
 
-      // استرجاع مصفوفات المجموعات المصرح لها حيوياً لكل منصة
-      if (localStorage.getItem('tgCachedUsers')) tgCachedUsers = JSON.parse(localStorage.getItem('tgCachedUsers'));
-      if (localStorage.getItem('dcUserCachedUsers')) dcUserCachedUsers = JSON.parse(localStorage.getItem('dcUserCachedUsers'));
+                                if (localStorage.getItem('fpsSelect')) {
+                                  document.getElementById('fpsSelect').value = localStorage.getItem('fpsSelect');
+                                  handleFPSChange();
+                                }
+                                if (localStorage.getItem('customMs')) {
+                                  document.getElementById('customMs').value = localStorage.getItem('customMs');
+                                  if (document.getElementById('fpsSelect').value === "custom") handleCustomMsInput();
+                                }
 
-      if (localStorage.getItem('fpsSelect')) {
-        document.getElementById('fpsSelect').value = localStorage.getItem('fpsSelect');
-        handleFPSChange();
-      }
-      if (localStorage.getItem('customMs')) {
-        document.getElementById('customMs').value = localStorage.getItem('customMs');
-        if (document.getElementById('fpsSelect').value === "custom") handleCustomMsInput();
-      }
+                                updateInterfaceStrings(); // تطبيق اتجاه ونصوص اللغة المعتمدة حركياً
+                                renderUserTags(); // رسم تاجات الأعضاء المسترجعة بالـ ✕
+                                checkLiveStatus();
+                                setInterval(checkLiveStatus, 5000); // تحديث لمصابيح الـ LED كل 5 ثوانٍ حيوياً
+                              });
 
-      renderUserTags(); // رسم تاجات الأعضاء المسترجعة
-      checkLiveStatus();
-      setInterval(checkLiveStatus, 5000); // تحديث لمصابيح الـ LED كل 5 ثوانٍ
-    });
+                              // 2. فحص نقاط الإضاءة LED وتحديث حالة أزرار التشغيل/الإيقاف حيوياً بناءً على رد السيرفر
+                              async function checkLiveStatus() {
+                                try {
+                                  const res = await fetch('/api/status');
+                                  const data = await res.json();
 
-    // 2. فحص نقاط الإضاءة LED (أخضر متصل ونشط / أحمر مغلق وغير متصل)
-    async function checkLiveStatus() {
-      try {
-        const res = await fetch('/api/status');
-        const data = await res.json();
+                                  const tgLed = document.getElementById('tgLed');
+                                  const dcLed = document.getElementById('dcLed');
 
-        const tgLed = document.getElementById('tgLed');
-        const dcLed = document.getElementById('dcLed');
+                                  // تحديث حالة اتصال تليجرام حيوياً ومزامنة الزر
+                                  isTgBotOnline = data.telegram;
+                                  if (isTgBotOnline) tgLed.classList.add('online'); else tgLed.classList.remove('online');
 
-        if (data.telegram) tgLed.classList.add('online'); else tgLed.classList.remove('online');
-        if (data.discord) dcLed.classList.add('online'); else dcLed.classList.remove('online');
-      } catch (e) { console.error("فشل فحص الحالة حيوياً"); }
-    }
+                                  // تحديث حالة اتصال ديسكورد حيوياً ومزامنة الزر
+                                  isDcBotOnline = data.discord;
+                                  if (isDcBotOnline) dcLed.classList.add('online'); else dcLed.classList.remove('online');
 
-    // 3. النوافذ المنبثقة المخصصة الاحترافية (Custom Modals) بديل الـ Alert الافتراضي للويندوز
-    function showAlert(title, msg, isSuccess = true) {
-      document.getElementById('alertTitle').innerText = title;
-      document.getElementById('alertTitle').style.color = isSuccess ? "var(--neon-green)" : "var(--neon-red)";
-      document.getElementById('alertMessage').innerText = msg;
-      document.getElementById('customAlert').classList.add('active');
-    }
-    function closeAlert() { document.getElementById('customAlert').classList.remove('active'); }
-    function showDeleteConfirm() { document.getElementById('customConfirm').classList.add('active'); }
-    function closeConfirm() { document.getElementById('customConfirm').classList.remove('active'); }
+                                  updateInterfaceStrings(); // إعادة حقن النصوص والألوان للأزرار تزامناً مع الحالة الحية
+                                } catch (e) { console.error("فشل فحص الحالة حيوياً"); }
+                              }
 
-    // 4. دالة تصفير وحذف الـ LocalStorage وكافة الخانات والقوائم المفتوحة بالكامل بالمتصفح
-    function confirmDeleteData() {
-      localStorage.clear();
-      tgCachedUsers = [];
-      dcUserCachedUsers = [];
-      document.getElementById('tgAdmin').value = '';
-      document.getElementById('tgToken').value = '';
-      document.getElementById('dcAdmin').value = '';
-      document.getElementById('dcToken').value = '';
-      document.getElementById('dcChannel').value = '';
-      document.getElementById('fpsSelect').value = 'stop';
-      handleFPSChange();
-      renderUserTags();
-      closeConfirm();
-      showAlert(i18n[currentLang].alert_delete_title, i18n[currentLang].alert_delete_body, true);
-      checkLiveStatus();
-    }
+                              // 3. النوافذ المنبثقة المخصصة الاحترافية (Custom Modals) بديل الـ Alert لبيئة الويندوز
+                              function showAlert(title, msg, isSuccess = true) {
+                                document.getElementById('alertTitle').innerText = title;
+                                document.getElementById('alertTitle').style.color = isSuccess ? "var(--neon-green)" : "var(--neon-red)";
+                                document.getElementById('alertMessage').innerText = msg;
+                                document.getElementById('customAlert').classList.add('active');
+                              }
+                              function closeAlert() { document.getElementById('customAlert').classList.remove('active'); }
+                              function showDeleteConfirm() { document.getElementById('customConfirm').classList.add('active'); }
+                              function closeConfirm() { document.getElementById('customConfirm').classList.remove('active'); }
 
-    // 5. جلب بث الشاشة الحي من الخادم وعرضه داخل كائن اللوحة
-    async function fetchScreenshot() {
-      try {
-        const res = await fetch('/api/screenshot');
-        const data = await res.json();
-        if (data.success) document.getElementById('screenView').src = data.image;
-      } catch (e) { console.error("Error fetching live buffer stream:", e); }
-    }
+                              // 4. دالة تصفير وحذف الـ LocalStorage وكافة الخانات والقوائم المفتوحة بالكامل بالمتصفح
+                              function confirmDeleteData() {
+                                localStorage.clear();
+                                tgCachedUsers = [];
+                                dcUserCachedUsers = [];
+                                document.getElementById('tgAdmin').value = '';
+                                document.getElementById('tgToken').value = '';
+                                document.getElementById('dcAdmin').value = '';
+                                document.getElementById('dcToken').value = '';
+                                document.getElementById('dcChannel').value = '';
+                                document.getElementById('fpsSelect').value = 'stop';
+                                handleFPSChange();
+                                renderUserTags();
+                                closeConfirm();
+                                showAlert(i18n[currentLang].alert_delete_title, i18n[currentLang].alert_delete_body, true);
+                                checkLiveStatus();
+                              }
 
-    // 6. معالجة نقرات الماوس وحساب موضع الضغطة ليتناسب مع أبعاد شاشة الكمبيوتر الأصلية
-    async function sendClick(event) {
-      const img = event.target;
-      const rect = img.getBoundingClientRect();
-      const scaleX = window.screen.width / rect.width;
-      const scaleY = window.screen.height / rect.height;
-      const clickX = Math.round((event.clientX - rect.left) * scaleX);
-      const clickY = Math.round((event.clientY - rect.top) * scaleY);
+                              // 5. جلب بث الشاشة الحي من الخادم وعرضه داخل كائن اللوحة
+                              async function fetchScreenshot() {
+                                try {
+                                  const res = await fetch('/api/screenshot');
+                                  const data = await res.json();
+                                  if (data.success) document.getElementById('screenView').src = data.image;
+                                } catch (e) { console.error("Error fetching live buffer stream:", e); }
+                              }
 
-      await fetch('/api/click', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ x: clickX, y: clickY, user: "WebConsole_Admin" })
-      });
-      setTimeout(fetchScreenshot, 200); // تحديث البث تلقائياً بربع ثانية لرؤية نتيجة النقرة فوراً
-    }
-    // 7. التحكم بمعدلات تحديث الإطارات وتخزين البيانات المختارة بكاش المتصفح
-    function handleFPSChange() {
-      const type = document.getElementById('fpsSelect').value;
-      const customInput = document.getElementById('customMs');
-      clearInterval(streamInterval);
-      customInput.style.display = "none";
-      localStorage.setItem('fpsSelect', type);
+                              // 6. معالجة نقرات الماوس وحساب موضع الضغطة ليتناسب مع أبعاد شاشة الكمبيوتر الأصلية والـ Scaling
+                              async function sendClick(event) {
+                                const img = event.target;
+                                const rect = img.getBoundingClientRect();
+                                const scaleX = window.screen.width / rect.width;
+                                const scaleY = window.screen.height / rect.height;
+                                const clickX = Math.round((event.clientX - rect.left) * scaleX);
+                                const clickY = Math.round((event.clientY - rect.top) * scaleY);
 
-      if (type === "stop") return;
+                                await fetch('/api/click', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ x: clickX, y: clickY, user: "WebConsole_Admin" })
+                                });
+                                setTimeout(fetchScreenshot, 200); // تحديث البث تلقائياً بربع ثانية لرؤية نتيجة النقرة فوراً
+                              }
+                                    // 7. التحكم بمعدلات تحديث الإطارات وتخزين البيانات المختارة بكاش المتصفح
+                                      function handleFPSChange() {
+                                        const type = document.getElementById('fpsSelect').value;
+                                        const customInput = document.getElementById('customMs');
+                                        clearInterval(streamInterval);
+                                        customInput.style.display = "none";
+                                        localStorage.setItem('fpsSelect', type);
 
-      let ms = type === "30" ? 1000 / 30 : type === "60" ? 1000 / 60 : null;
-      if (type === "custom") { customInput.style.display = "inline-block"; return; }
-      if (ms) streamInterval = setInterval(fetchScreenshot, ms);
-    }
+                                        if (type === "stop") return;
 
-    function handleCustomMsInput() {
-      const ms = parseInt(document.getElementById('customMs').value);
-      localStorage.setItem('customMs', ms);
-      if (ms && ms > 10) {
-        clearInterval(streamInterval);
-        streamInterval = setInterval(fetchScreenshot, ms);
-      }
-    }
+                                        let ms = type === "30" ? 1000 / 30 : type === "60" ? 1000 / 60 : null;
+                                        if (type === "custom") { customInput.style.display = "inline-block"; return; }
+                                        if (ms) streamInterval = setInterval(fetchScreenshot, ms);
+                                      }
 
-    // 8. Tالتبديل المرئي بين نماذج المنصات وفصل وعزل قوائم المستخدمين حيوياً لمنع التعارض
-    function toggleBotForm(platform) {
-      currentPlatform = platform;
-      document.getElementById('tgFormSection').style.display = platform === 'tg' ? 'block' : 'none';
-      document.getElementById('dcFormSection').style.display = platform === 'dc' ? 'block' : 'none';
+                                      function handleCustomMsInput() {
+                                        const ms = parseInt(document.getElementById('customMs').value);
+                                        localStorage.setItem('customMs', ms);
+                                        if (ms && ms > 10) {
+                                          clearInterval(streamInterval);
+                                          streamInterval = setInterval(fetchScreenshot, ms);
+                                        }
+                                      }
 
-      const title = document.getElementById('userListTitle');
-      title.innerText = platform === 'tg' ? i18n[currentLang].userListTitle_tg : i18n[currentLang].userListTitle_dc;
+                                      // 8. التبديل المرئي بين نماذج المنصات وفصل وعزل قوائم المستخدمين حيوياً لمنع التعارض
+                                      function toggleBotForm(platform) {
+                                        currentPlatform = platform;
+                                        document.getElementById('tgFormSection').style.display = platform === 'tg' ? 'block' : 'none';
+                                        document.getElementById('dcFormSection').style.display = platform === 'dc' ? 'block' : 'none';
 
-      renderUserTags(); // إعادة بناء التاجات المنفصلة للبوت المحدد لمنع التداخل والتعارض
-    }
+                                        const title = document.getElementById('userListTitle');
+                                        title.innerText = platform === 'tg' ? i18n[currentLang].userListTitle_tg : i18n[currentLang].userListTitle_dc;
 
-    // 9. رسم تاجات المستخدمين المصرح لهم بالتحكم في الواجهة الأمامية تبعا للتبديل الحالي
-    function renderUserTags() {
-      const container = document.getElementById('allowedUsersList');
-      container.innerHTML = '';
-      const activeList = currentPlatform === 'tg' ? tgCachedUsers : dcUserCachedUsers;
+                                        renderUserTags(); // إعادة بناء التاجات المنفصلة للبوت المحدد لمنع التداخل والتعارض
+                                      }
 
-      activeList.forEach(u => {
-        container.innerHTML += `<div class="user-tag">👤 <span>${u}</span></div>`;
-      });
-    }
+                                      // 9. رسم تاجات المستخدمين وإضافة ميزة أيقونة الحذف النيون ✕ لكل عضو مصرح له
+                                      function renderUserTags() {
+                                        const container = document.getElementById('allowedUsersList');
+                                        container.innerHTML = '';
+                                        const activeList = currentPlatform === 'tg' ? tgCachedUsers : dcUserCachedUsers;
 
-    // 10. إضافة مستخدم جديد وحفظ المصفوفات بشكل منعزل بالـ LocalStorage للـ Multi-Users
-    async function addUser() {
-      const userField = document.getElementById('newAllowedUser');
-      const username = userField.value.trim();
-      if (!username) return;
+                                        activeList.forEach(u => {
+                                          // حقن التاج مدمجاً بكبس الحذف الاستدعائي الحركي ✕
+                                          container.innerHTML += `
+                    <div class="user-tag">
+                        <span>👤 ${u}</span>
+                        <span class="remove-user-btn" onclick="removeUser('${u}')">✕</span>
+                    </div>
+                `;
+                                        });
+                                      }
 
-      const res = await fetch('/api/users/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, platform: currentPlatform })
-      });
-      const data = await res.json();
-      if (data.success) {
-        userField.value = '';
-        if (currentPlatform === 'tg') {
-          tgCachedUsers = data.users;
-          localStorage.setItem('tgCachedUsers', JSON.stringify(tgCachedUsers));
-        } else {
-          dcUserCachedUsers = data.users;
-          localStorage.setItem('dcUserCachedUsers', JSON.stringify(dcUserCachedUsers));
-        }
-        renderUserTags(); // تحديث فوري للمظهر على الشاشة
-      }
-    }
+                                      // 10. إضافة مستخدم جديد وحفظ المصفوفات بشكل منعزل بالـ LocalStorage للتحكم الجماعي
+                                      async function addUser() {
+                                        const userField = document.getElementById('newAllowedUser');
+                                        const username = userField.value.trim();
+                                        if (!username) return;
 
-    // 11. تفعيل محطة تليجرام وحقن مصفوفة مستخدميها المنفصلة والمزامنة مع حاقن أخطاء التفاصيل
-    async function connectTelegram() {
-      const admin = document.getElementById('tgAdmin').value;
-      const token = document.getElementById('tgToken').value;
+                                        const res = await fetch('/api/users/add', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ username, platform: currentPlatform })
+                                        });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                          userField.value = '';
+                                          if (currentPlatform === 'tg') {
+                                            tgCachedUsers = data.users;
+                                            localStorage.setItem('tgCachedUsers', JSON.stringify(tgCachedUsers));
+                                          } else {
+                                            dcUserCachedUsers = data.users;
+                                            localStorage.setItem('dcUserCachedUsers', JSON.stringify(dcUserCachedUsers));
+                                          }
+                                          renderUserTags(); // تحديث مظهر القائمة وإضافة التاج حيوياً
+                                        }
+                                      }
 
-      const res = await fetch('/api/config/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, admin, users: tgCachedUsers })
-      });
-      const data = await res.json();
+                                      // 11. دالة حذف مستخدم معين وتحديث السيرفر والـ LocalStorage فور ضغط زر ✕
+                                      async function removeUser(username) {
+                                        const isConfirmed = confirm(currentLang === 'ar' ? `هل أنت متأكد من حذف ${username}؟` : `Are you sure you want to remove ${username}?`);
+                                        if (!isConfirmed) return;
 
-      if (data.success) {
-        localStorage.setItem('tgAdmin', admin);
-        localStorage.setItem('tgToken', token);
-        showAlert(i18n[currentLang].alert_success_title, data.message, true);
-      } else {
-        showAlert(i18n[currentLang].alert_fail_title, data.error, false);
-      }
-      setTimeout(checkLiveStatus, 1000); // تحديث مؤشرات الـ LED
-    }
+                                        const res = await fetch('/api/users/remove', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ username, platform: currentPlatform })
+                                        });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                          if (currentPlatform === 'tg') {
+                                            tgCachedUsers = data.users;
+                                            localStorage.setItem('tgCachedUsers', JSON.stringify(tgCachedUsers));
+                                          } else {
+                                            dcUserCachedUsers = data.users;
+                                            localStorage.setItem('dcUserCachedUsers', JSON.stringify(dcUserCachedUsers));
+                                          }
+                                          renderUserTags(); // تحديث مظهر القائمة وإزالة التاج حيوياً
+                                        }
+                                      }
 
-    // 12. تفعيل محطة ديسكورد وحقن مصفوفة مستخدميها المنفصلة والمزامنة مع حاقن أخطاء التفاصيل
-    async function connectDiscord() {
-      const admin = document.getElementById('dcAdmin').value;
-      const token = document.getElementById('dcToken').value;
-      const channelId = document.getElementById('dcChannel').value;
+                                      // 12. تفعيل أو إيقاف محطة تليجرام حيوياً ومزامنة قلب حالة الزر والنصوص والألوان (أخضر / أحمر)
+                                      async function connectTelegram() {
+                                        const admin = document.getElementById('tgAdmin').value;
+                                        const token = document.getElementById('tgToken').value;
 
-      const res = await fetch('/api/config/discord', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, admin, channelId, users: dcUserCachedUsers })
-      });
-      const data = await res.json();
+                                        // قراءة الإجراء المطلق: لو أونلاين نرسل أمر stop للإيقاف، ولو أوفلاين نرسل لتشغيله
+                                        const payload = isTgBotOnline ? { action: 'stop' } : { token, admin, users: tgCachedUsers };
 
-      if (data.success) {
-        localStorage.setItem('dcAdmin', admin);
-        localStorage.setItem('dcToken', token);
-        localStorage.setItem('dcChannel', channelId);
-        showAlert(i18n[currentLang].alert_success_title, data.message, true);
-      } else {
-        showAlert(i18n[currentLang].alert_fail_title, data.error, false);
-      }
-      setTimeout(checkLiveStatus, 1000); // تحديث مؤشرات الـ LED لبيان حالة الاتصال
-    }
+                                        const res = await fetch('/api/config/telegram', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify(payload)
+                                        });
+                                        const data = await res.json();
 
-    // تشغيل أولي لسحب لقطة الشاشة لبدء الاستعراض والعمل فور تحميل الصفحة
-    fetchScreenshot();
-  </script>
-</body>
+                                        if (data.success) {
+                                          if (!isTgBotOnline) {
+                                            localStorage.setItem('tgAdmin', admin);
+                                            localStorage.setItem('tgToken', token);
+                                          }
+                                          showAlert(i18n[currentLang].alert_success_title, data.message, true);
+                                        } else {
+                                          showAlert(i18n[currentLang].alert_fail_title, data.error, false);
+                                        }
+                                        setTimeout(checkLiveStatus, 1000); // تحديث فوري لحالة البوت والمصابيح والأزرار حيوياً
+                                      }
 
-</html>
+                                      // 13. تفعيل أو إيقاف محطة ديسكورد حيوياً ومزامنة قلب حالة الزر والنصوص والألوان (أخضر / أحمر)
+                                      async function connectDiscord() {
+                                        const admin = document.getElementById('dcAdmin').value;
+                                        const token = document.getElementById('dcToken').value;
+                                        const channelId = document.getElementById('dcChannel').value;
+
+                                        // قراءة الإجراء المطلق: لو أونلاين نرسل أمر stop للإيقاف، ولو أوفلاين نرسل لتشغيله
+                                        const payload = isDcBotOnline ? { action: 'stop' } : { token, admin, channelId, users: dcUserCachedUsers };
+
+                                        const res = await fetch('/api/config/discord', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify(payload)
+                                        });
+                                        const data = await res.json();
+
+                                        if (data.success) {
+                                          if (!isDcBotOnline) {
+                                            localStorage.setItem('dcAdmin', admin);
+                                            localStorage.setItem('dcToken', token);
+                                            localStorage.setItem('dcChannel', channelId);
+                                          }
+                                          showAlert(i18n[currentLang].alert_success_title, data.message, true);
+                                        } else {
+                                          showAlert(i18n[currentLang].alert_fail_title, data.error, false);
+                                        }
+                                        setTimeout(checkLiveStatus, 1000); // تحديث فوري لحالة البوت والمصابيح والأزرار حيوياً
+                                      }
+
+                                      // جلب أولي لسحب لقطة الشاشة لبدء الاستعراض والعمل فور تحميل الصفحة
+                                      fetchScreenshot();
+                                    </script>
+    </body>
+    
+    </html>
