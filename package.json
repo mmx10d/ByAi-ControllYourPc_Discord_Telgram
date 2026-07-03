@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@nut-tree-fork/nut-js": "^4.2.6",
+    "carlo": "^0.9.46",
     "cors": "^2.8.6",
     "discord": "^0.8.2",
     "express": "^5.2.1",
