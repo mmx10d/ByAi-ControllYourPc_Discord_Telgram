@@ -1,5 +1,5 @@
 // ========================================================
-// 🛰️ SERVER STATION (index.js) - COMMERCIAL EXE VERSION 🛰️
+// 🛰️ SERVER STATION (index.js) - THE ULTIMATE FULL VERSION 🛰️
 // ========================================================
 
 const express = require('express');
@@ -15,177 +15,181 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// In-memory data store for configurations and permitted users
+// كائنات التخزين الحية المحدثة بفصل قوائم المستخدمين لكل منصة بشكل مستقل
 let appConfig = {
-  telegram: { token: '', admin: '', active: false },
-  discord: { token: '', channelId: '', admin: '', active: false },
-  allowedUsers: []
+  telegram: { token: '', admin: '', active: false, allowedUsers: [] },
+  discord: { token: '', channelId: '', admin: '', active: false, allowedUsers: [] }
 };
 
-// Global variables to hold active bot initialization functions
 let initTelegramBot = null;
 let initDiscordBot = null;
 
-// Check if bot module files exist in the project directory
-const tgFileExists = fs.existsSync(path.join(__dirname, 'telegramBot.js'));
-const dcFileExists = fs.existsSync(path.join(__dirname, 'discordBot.js'));
+// فحص وجود الملفات بشكل حيوي ومستقر
+const checkTGFile = () => fs.existsSync(path.join(__dirname, 'telegramBot.js'));
+const checkDCFile = () => fs.existsSync(path.join(__dirname, 'discordBot.js'));
 
-// Dynamically import the bot modules using explicit paths compatible with pkg compilation
-if (tgFileExists) {
-  try {
-    const tgModule = require(path.join(__dirname, 'telegramBot.js'));
-    initTelegramBot = tgModule.initTelegramBot;
-    console.log("✅ Telegram Station file detected and integrated successfully.");
-  } catch (e) {
-    console.error("⚠️ Error loading telegramBot.js module:", e.message);
-  }
-}
-
-if (dcFileExists) {
-  try {
-    const dcModule = require(path.join(__dirname, 'discordBot.js'));
-    initDiscordBot = dcModule.initDiscordBot;
-    console.log("✅ Discord Station file detected and integrated successfully.");
-  } catch (e) {
-    console.error("⚠️ Error loading discordBot.js module:", e.message);
-  }
-}
-
-/**
- * 🔒 Licensing Web Route
- * Serves index.html from embedded asset storage if valid.
- */
-app.get('/', (req, res) => {
-  if (!tgFileExists || !dcFileExists) {
-    return res.send(`
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head>
-            <meta charset="UTF-8">
-            <title>تنبيه الحماية والترخيص 🔒</title>
-            <style>
-                body { font-family: 'Segoe UI', sans-serif; background: #0b0f19; color: #fff; text-align: center; padding-top: 15vh; margin: 0; }
-                .alert-card { background: #131a26; border: 2px solid #ff4d4d; border-radius: 12px; padding: 40px; display: inline-block; max-width: 500px; box-shadow: 0 0 25px rgba(255,77,77,0.2); }
-                h1 { color: #ff4d4d; font-size: 28px; margin-bottom: 20px; }
-                p { font-size: 18px; line-height: 1.6; color: #cddee8; }
-                .owner-link { display: inline-block; margin-top: 20px; font-weight: bold; font-size: 20px; color: #00ffaa; text-decoration: none; border: 1px dashed #00ffaa; padding: 10px 20px; border-radius: 8px; }
-            </style>
-        </head>
-        <body>
-            <div class="alert-card">
-                <h1>🔒 تنبيه: ملفات المحطة غير مكتملة</h1>
-                <p>أنت لم تقم بشراء هذا البوت، أو أن بعض ملفات النظام الأساسية مفقودة من المجلد الخاص بك!</p>
-                <p>يرجى التواصل مع المالك المعتمد فوراً لتفعيل المحطة بالكامل:</p>
-                <a href="https://t.me" target="_blank" style="color: #00ffaa; font-weight: bold; text-decoration: none;">📬 مراسلة المالك: @mmx10d</a>
-            </div>
-        </body>
-        </html>
-        `);
-  }
-
-  // 🌟 ضمان قراءة ملف الـ HTML المدمج داخل جسد الـ exe بثبات وبدون انهيار السيرفر
-  const embeddedHtmlPath = path.join(__dirname, 'index.html');
-  res.sendFile(embeddedHtmlPath);
+// مسار فحص الحالة النشطة وإرسال قوائم الأعضاء المزامنة للواجهة
+app.get('/api/status', (req, res) => {
+  res.json({
+    telegram: checkTGFile() ? appConfig.telegram.active : false,
+    discord: checkDCFile() ? appConfig.discord.active : false,
+    tgUsers: appConfig.telegram.allowedUsers,
+    dcUsers: appConfig.discord.allowedUsers
+  });
 });
 
 /**
- * 🖥️ 1. Screenshot Capture API Route
+ * 🔓 مسار الويب الرئيسي
+ * يفتح دائماً ويعرض واجهة الـ HTML النيون بشكل طبيعي دون حظر أو قفل كلي للبرنامج
+ */
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+/**
+ * 🖥️ مسار التقاط لقطات الشاشة للـ API
  */
 app.get('/api/screenshot', async (req, res) => {
   try {
     const imgBuffer = await screenshot({ format: 'png' });
     res.json({ success: true, image: `data:image/png;base64,${imgBuffer.toString('base64')}` });
   } catch (error) {
-    res.status(500).json({ success: false, error: "System failed to extract screen snapshot" });
+    res.status(500).json({ success: false });
   }
 });
 
 /**
- * 🎯 2. Mouse Click API Route
+ * 🎯 مسار النقر وتحريك الماوس الفعلي عبر PowerShell بدقة عالية
  */
 app.post('/api/click', (req, res) => {
   const { x, y, user } = req.body;
 
-  const isMainAdmin = (user === appConfig.telegram.admin || user === appConfig.discord.admin || user === "WebConsole_Admin");
-  const isAllowed = appConfig.allowedUsers.includes(user);
+  // التحقق من صلاحية المستخدم الحالي تبعا للمنصات والمصفوفات المفصولة
+  const isAuthorized = (
+    user === "WebConsole_Admin" ||
+    user === appConfig.telegram.admin ||
+    user === appConfig.discord.admin ||
+    appConfig.telegram.allowedUsers.includes(user) ||
+    appConfig.discord.allowedUsers.includes(user)
+  );
 
-  if (!isMainAdmin && !isAllowed) {
-    return res.status(403).json({ error: "Access Denied: Account not permitted to trigger controls!" });
-  }
+  if (!isAuthorized) return res.status(403).json({ error: "Access Denied" });
 
   const command = `powershell -command "$c = '[DllImport(\\"user32.dll\\")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info); [DllImport(\\"user32.dll\\")] public static extern bool SetCursorPos(int x, int y);'; $type = Add-Type -MemberDefinition $c -Name 'Win32' -Namespace 'Win32Functions' -PassThru; $type::SetCursorPos(${x}, ${y}); $type::mouse_event(0x0002, 0, 0, 0, 0); $type::mouse_event(0x0004, 0, 0, 0, 0);"`;
 
   exec(command, (err) => {
-    if (err) return res.status(500).json({ success: false, error: "PowerShell driver script issue" });
+    if (err) return res.status(500).json({ success: false });
     res.json({ success: true });
   });
 });
 
 /**
- * ✈️ 3. Telegram Activation Endpoint
+ * ✈️ تفعيل محطة تليجرام وفحص وجود الملف مع إظهار تفاصيل الأخطاء الحية بدقة للعميل
  */
-app.post('/api/config/telegram', (req, res) => {
-  const { token, admin } = req.body;
-  appConfig.telegram = { token, admin, active: true };
+app.post('/api/config/telegram', async (req, res) => {
+  const { token, admin, users } = req.body;
 
-  if (!initTelegramBot) {
-    return res.status(400).json({ success: false, error: "Telegram module missing or unlicensed. Purchase from @mmx10d" });
+  // الفحص الصريح: إذا كان ملف البوت محذوفاً يرفض ويرسل رسالة المالك فورا
+  if (!checkTGFile()) {
+    return res.status(400).json({ success: false, error: "أنت لم تقم بشراء هذا البوت يرجى شرائه من المالك @mmx10d" });
   }
 
+  // مزامنة وحفظ قائمة المستخدمين الخاصة بالتليجرام
+  appConfig.telegram.allowedUsers = Array.isArray(users) ? users : [];
+
   try {
-    initTelegramBot({ token, admin }, appConfig.allowedUsers);
-    res.json({ success: true, message: "Telegram Station bot process launched successfully!" });
+    delete require.cache[require.resolve('./telegramBot.js')];
+    const tgModule = require('./telegramBot.js');
+    initTelegramBot = tgModule.initTelegramBot;
+
+    // تشغيل البوت وتمرير إعداداته وقائمته المحفوظة
+    const success = await initTelegramBot({ token, admin }, appConfig.telegram.allowedUsers);
+    if (success) {
+      appConfig.telegram.token = token;
+      appConfig.telegram.admin = admin;
+      appConfig.telegram.active = true;
+      res.json({ success: true, message: "تم تشغيل محطة تليجرام بنجاح واتصل البوت بالخوادم! 🚀" });
+    } else {
+      appConfig.telegram.active = false;
+      res.status(400).json({ success: false, error: "التوكين فيه خطا أو البوت معلق، ولم يتم الاتصال بالسيرفر بشكل صحيح." });
+    }
   } catch (error) {
-    res.status(500).json({ success: false, error: "Failed initializing Telegram background service" });
+    appConfig.telegram.active = false;
+    // إرسال تفاصيل الخطأ الحقيقية للواجهة ليعرف العميل سبب المشكلة بدقة في الشاشة
+    res.status(400).json({ success: false, error: `فشل الاتصال! التفاصيل: ${error.message || "خطأ مجهول في خوادم تليجرام"}` });
   }
 });
 
 /**
- * 💬 4. Discord Activation Endpoint
+ * 💬 تفعيل محطة ديسكورد وفحص وجود الملف مع إظهار تفاصيل الأخطاء الحية حيوياً للعميل
  */
-app.post('/api/config/discord', (req, res) => {
-  const { token, channelId, admin } = req.body;
-  appConfig.discord = { token, channelId, admin, active: true };
+app.post('/api/config/discord', async (req, res) => {
+  const { token, channelId, admin, users } = req.body;
 
-  if (!initDiscordBot) {
-    return res.status(400).json({ success: false, error: "Discord module missing or unlicensed. Purchase from @mmx10d" });
+  // الفحص الصريح الأضمن: إذا كان ملف البوت محذوفاً يرفض ويرسل رسالة المالك فورا
+  if (!checkDCFile()) {
+    return res.status(400).json({ success: false, error: "أنت لم تقم بشراء هذا البوت يرجى شرائه من المالك @mmx10d" });
   }
 
+  // مزامنة وحفظ قائمة المستخدمين الخاصة بالديسكورد لعدم حدوث تداخل
+  appConfig.discord.allowedUsers = Array.isArray(users) ? users : [];
+
   try {
-    initDiscordBot({ token, channelId, admin }, appConfig.allowedUsers);
-    res.json({ success: true, message: "Discord Station bot process launched successfully!" });
+    delete require.cache[require.resolve('./discordBot.js')];
+    const dcModule = require('./discordBot.js');
+    initDiscordBot = dcModule.initDiscordBot;
+
+    // تشغيل البوت وتمرير إعداداته وقائمته المحفوظة
+    const success = await initDiscordBot({ token, channelId, admin }, appConfig.discord.allowedUsers);
+    if (success) {
+      appConfig.discord.token = token;
+      appConfig.discord.channelId = channelId;
+      appConfig.discord.admin = admin;
+      appConfig.discord.active = true;
+      res.json({ success: true, message: "تم تشغيل محطة ديسكورد بنجاح واتصل البوت بالخوادم! 🚀" });
+    } else {
+      appConfig.discord.active = false;
+      res.status(400).json({ success: false, error: "التوكين فيه خطا أو البوت معلق، ولم يتم الاتصال بالسيرفر بشكل صحيح." });
+    }
   } catch (error) {
-    res.status(500).json({ success: false, error: "Failed initializing Discord background service" });
+    appConfig.discord.active = false;
+    // إرسال تفاصيل الخطأ الحقيقية ليفهم المشتري سبب المشكلة فوراً (مثل نقص الـ Intents)
+    res.status(400).json({ success: false, error: `فشل الاتصال! التفاصيل: ${error.message || "خطأ مجهول في خوادم ديسكورد"}` });
   }
 });
 
 /**
- * 👥 5. Team Controller Permission API
+ * 👥 إضافة مستخدم مصرح له وتحديث الذاكرة الحية لكل منصة بشكل مستقل ومحفوظ
  */
 app.post('/api/users/add', (req, res) => {
-  const { username } = req.body;
+  const { username, platform } = req.body; // استقبال اسم المستخدم والمنصة المستهدفة (tg أو dc)
   const cleanUser = username ? username.trim().replace('@', '') : '';
 
-  if (cleanUser && !appConfig.allowedUsers.includes(cleanUser)) {
-    appConfig.allowedUsers.push(cleanUser);
-    return res.json({ success: true, users: appConfig.allowedUsers });
+  if (!cleanUser) return res.status(400).json({ success: false });
+
+  if (platform === 'tg') {
+    if (!appConfig.telegram.allowedUsers.includes(cleanUser)) {
+      appConfig.telegram.allowedUsers.push(cleanUser);
+    }
+    return res.json({ success: true, users: appConfig.telegram.allowedUsers });
+  } else if (platform === 'dc') {
+    if (!appConfig.discord.allowedUsers.includes(cleanUser)) {
+      appConfig.discord.allowedUsers.push(cleanUser);
+    }
+    return res.json({ success: true, users: appConfig.discord.allowedUsers });
   }
-  res.status(400).json({ success: false, message: "User handle invalid or already existing" });
+
+  res.status(400).json({ success: false });
 });
 
-// إقلاع خادم المحطة وإطلاق واجهة التطبيق المستقلة المدمجة بالنظام
+// إقلاع خادم السيرفر التلقائي المخفي للويندوز الأصلي في وضع التطبيق المستقل
 app.listen(PORT, () => {
   console.log(`\n======================================================`);
   console.log(`📡 CORE HUB STATION ACTIVE ON: http://localhost:${PORT}`);
   console.log(`======================================================\n`);
 
   const targetUrl = `http://localhost:${PORT}`;
-
-  // فتح الواجهة بشكل تطبيق مستقل (بدون أشرطة متصفح أو بحث) لتعرض اللوحة باحترافية
   exec(`start chrome --app="${targetUrl}"`, function (err) {
-    if (err) {
-      // إذا لم يتوفر متصفح كروم يتم التوجيه لمتصفح إيدج المدمج تلقائياً بنفس الوضع المستقل
-      exec(`start msedge --app="${targetUrl}"`);
-    }
+    if (err) exec(`start msedge --app="${targetUrl}"`);
   });
 });

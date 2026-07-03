@@ -18,6 +18,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "canvas": "^3.2.3",
     "cors": "^2.8.5",
     "discord.js": "^14.15.3",
     "express": "^4.19.2",

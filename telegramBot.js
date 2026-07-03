@@ -1,117 +1,198 @@
-// ==========================================
-// محطة بوت التليجرام الذكية - الجزء الأول 🤖✈️
-// ==========================================
+// ========================================================
+// 🛰️ محطة بوت التليجرام الذكية (telegramBot.js) - الجزء الأول 🤖✈️
+// ========================================================
 
 const { Telegraf } = require('telegraf');
 const screenshot = require('screenshot-desktop');
+const { exec } = require('child_process');
+const { createCanvas, loadImage } = require('canvas'); // محرك الرسم الرقمي للمقاييس
 
-// إعداد كائن المحطة لتخزين البيانات الحية أثناء التشغيل
 const telegramStation = {
   bot: null,
   token: '',
   admin: '',
-  allowedUsers: [], // قائمة المستخدمين الإضافيين المسموح لهم بالتحكم
+  allowedUsers: [],
 };
 
-/**
- * دالة التحقق من الهوية والأمان لبوت تليجرام
- * تتأكد إن كان الشخص الذي يرسل الأمر هو الأدمن أو مستخدم مسموح له
- */
+// دالة التحقق الأمنية من هوية الحسابات المصرح لها بالتحكم
 function isUserAuthorized(ctx) {
-  // جلب اسم المستخدم من التليجرام (أو الآيدي إذا لم يكن لديه يوزر نيم)
   const authorUsername = ctx.from.username || ctx.from.id.toString();
-
-  // 1. إذا كان هو الأدمن الرئيسي للمحطة
-  const isMainAdmin = (authorUsername === telegramStation.admin);
-
-  // 2. إذا كان من قائمة المستخدمين الإضافيين المسموح لهم
-  const isAllowed = telegramStation.allowedUsers.includes(authorUsername);
-
-  return isMainAdmin || isAllowed;
+  return (authorUsername === telegramStation.admin || telegramStation.allowedUsers.includes(authorUsername));
 }
 
-console.log("⚡ تم تحميل الجزء الأول من محطة تليجرام بنجاح وجاهز لبدء الربط...");
-// ==========================================
-// محطة بوت التليجرام الذكية - الجزء الثاني 🤖✈️
-// ==========================================
-const { exec } = require('child_process');
+/**
+ * 📏 دالة الرادار: تلتقط شاشة الكمبيوتر وترسم مساطر القياس الرقمية 
+ * على حواف وأطراف الصورة الأربعة فقط لحماية المحتوى الفعلي من التغطية
+ */
+async function generateEdgeGridScreen() {
+  const rawImgBuffer = await screenshot({ format: 'png' });
+  const image = await loadImage(rawImgBuffer);
+
+  // إنشاء لوحة رسم مطابقة تماماً لأبعاد شاشة العميل الأصلية
+  const canvas = createCanvas(image.width, image.height);
+  const ctx = canvas.getContext('2d');
+
+  // 1. رسم صورة شاشة الكمبيوتر الأصلية النظيفة بالخلفية
+  ctx.drawImage(image, 0, 0);
+
+  // 2. إعدادات خطوط القياس (لون نيون واضح وعالي التباين)
+  ctx.strokeStyle = '#00ffaa';
+  ctx.fillStyle = '#00ffaa';
+  ctx.font = 'bold 14px Arial';
+  ctx.lineWidth = 2;
+
+  const tickSize = 12; // طول خط المسطرة الصغير عند الحافة
+  const step = 100;    // المسافة بين الخطوط (كل 100 بكسل خط ورقمه)
+
+  // 🟢 أولاً: رسم المسطرة الأفقية (الحافة العلوية والسفلية للشاشة)
+  for (let x = step; x < image.width; x += step) {
+    const label = (x / step).toString(); // تحويل الرقم (100 تصبح 1، 200 تصبح 2)
+
+    // الحافة العلوية (Top Edge)
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, tickSize);
+    ctx.stroke();
+    ctx.fillText(label, x - 4, tickSize + 14);
+
+    // الحافة السفلية (Bottom Edge)
+    ctx.beginPath();
+    ctx.moveTo(x, image.height);
+    ctx.lineTo(x, image.height - tickSize);
+    ctx.stroke();
+    ctx.fillText(label, x - 4, image.height - tickSize - 6);
+  }
+
+  // 🔵 ثانياً: رسم المسطرة العمودية (الحافة اليسرى واليمنى للشاشة)
+  for (let y = step; y < image.height; y += step) {
+    const label = (y / step).toString();
+
+    // الحافة اليسرى (Left Edge)
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(tickSize, y);
+    ctx.stroke();
+    ctx.fillText(label, tickSize + 6, y + 5);
+
+    // الحافة اليمنى (Right Edge)
+    ctx.beginPath();
+    ctx.moveTo(image.width, y);
+    ctx.lineTo(image.width - tickSize, y);
+    ctx.stroke();
+    ctx.fillText(label, image.width - tickSize - 18, y + 5);
+  }
+
+  return canvas.toBuffer('image/png');
+}
+
+console.log("⚡ تم تحميل الجزء الأول من رادار تليجرام وجاهز للاستدعاء الفوري...");
+// ========================================================
+// 🛰️ محطة بوت التليجرام الذكية (telegramBot.js) - الجزء الثاني 🤖✈️
+// ========================================================
 
 /**
- * دالة تشغيل البوت وإدارة أوامر التليجرام الحية
+ * دالة تشغيل البوت وإدارة محطة تليجرام حيوياً
+ * تدعم التحقق من صحة التوكن وإرجاع النتيجة للسيرفر قبل تفعيل الـ Polling
  */
-function initTelegramBot(config, globalAllowedUsers) {
+async function initTelegramBot(config, globalAllowedUsers) {
   telegramStation.token = config.token;
   telegramStation.admin = config.admin;
   telegramStation.allowedUsers = globalAllowedUsers;
 
-  // إيقاف البوت القديم إذا كان يعمل لتفادي تداخل العمليات
+  // إيقاف أي اتصال نشط سابق للبوت لتفادي التكرار وتداخل العمليات
   if (telegramStation.bot) {
     try { telegramStation.bot.stop(); } catch (e) { }
   }
 
-  // إنشاء اتصال جديد مع البوت
-  telegramStation.bot = new Telegraf(telegramStation.token);
+  // بناء كائن البوت الجديد
+  const temporaryBot = new Telegraf(telegramStation.token);
 
-  // رسالة الترحيب عند بدء المحادثة
+  try {
+    // 🔒 فحص حيوي وحاسم لسلامة التوكن عبر خوادم تليجرام الرسمية
+    await temporaryBot.telegram.getMe();
+    telegramStation.bot = temporaryBot; // اعتماد البوت بعد نجاح الفحص
+  } catch (error) {
+    console.error("❌ Telegram token verification failed:", error.message);
+    return false; // إرجاع فشل للسيرفر ليعرض رسالة الخطأ للعميل
+  }
+
+  // رسالة الترحيب والشرح عند إرسال /start
   telegramStation.bot.start((ctx) => {
-    if (!isUserAuthorized(ctx)) {
-      return ctx.reply('❌ عذراً، أنت غير مسجل في قائمة التحكم المحمية لهذه المحطة!');
-    }
-    ctx.reply('مرحباً بك في محطة تليجرام الذكية للتحكم بالكمبيوتر! 🖥️\n\n' +
-      'الأوامر المتاحة:\n' +
-      '/screen - لالتقاط صورة شاشة حية\n' +
-      '/click X Y - للنقر على مكان معين (مثال: /click 500 400)');
+    if (!isUserAuthorized(ctx)) return ctx.reply('❌ عذراً، أنت غير مسجل في قائمة التحكم المحمية لهذه المحطة!');
+    ctx.reply(
+      `👋 مرحباً بك في محطة تليجرام المطورة بنظام رادار مساطر القياس الحوافي المحدثة! 🖥️📏\n\n` +
+      `💡 **الأوامر المتاحة بدون علامة / :**\n` +
+      `• اكتب **screen** 👈 لسحب صورة حية للكمبيوتر ومحاطة بمسطرة قياس الأطراف (كل 100 بكسل خط ورقمه).\n` +
+      `• اكتب **click X Y** 👈 للنقر الفوري وتحديث الصورة بلحظتها (مثال: click 500 400).`
+    );
   });
 
-  // 1. معالجة أمر التقاط الشاشة: /screen
-  telegramStation.bot.command('screen', async (ctx) => {
-    if (!isUserAuthorized(ctx)) return ctx.reply('❌ غير مصرح لك بالوصول!');
+  // محرك الاستماع للكتابة النصية المباشرة (بدون علامة / )
+  telegramStation.bot.on('text', async (ctx) => {
+    if (!isUserAuthorized(ctx)) return;
 
-    try {
-      await ctx.reply('جاري سحب لقطة الشاشة... 🔄');
-      const imgBuffer = await screenshot({ format: 'png' });
+    // تنظيف النص البرمجي وتحويله لأحرف صغيرة
+    const text = ctx.message.text.trim().toLowerCase();
 
-      // إرسال الصورة مباشرة للمستخدم كملف بافر
-      await ctx.replyWithPhoto({ source: imgBuffer });
-    } catch (error) {
-      console.error("خطأ تليجرام في السكرين شوت:", error);
-      ctx.reply("❌ فشل التقاط صورة الشاشة الحالية.");
-    }
-  });
+    // 🟢 1. أمر طلب الشاشة المحدث برادار القياس الحوافي (screen)
+    if (text === 'screen') {
+      try {
+        await ctx.reply('🔍 جاري التقاط شاشة الكمبيوتر الفعلي وتوليد مسطرة القياس الحوافي...');
+        const gridImgBuffer = await generateEdgeGridScreen();
 
-  // 2. معالجة أمر النقر وتحريك الماوس: /click X Y
-  telegramStation.bot.command('click', (ctx) => {
-    if (!isUserAuthorized(ctx)) return ctx.reply('❌ غير مصرح لك بالوصول!');
-
-    // تقسيم النص لاستخراج الإحداثيات (مثال النص: /click 100 200)
-    const msgText = ctx.message.text;
-    const args = msgText.split(' ').slice(1);
-    const x = parseInt(args[0]);
-    const y = parseInt(args[1]);
-
-    if (isNaN(x) || isNaN(y)) {
-      return ctx.reply("⚠️ صيغة الأمر خاطئة! الاستخدام الصحيح:\n`/click X Y`\n\nمثال: `/click 500 400`", { parse_mode: 'Markdown' });
-    }
-
-    // تشغيل أمر الـ PowerShell الأصلي والآمن للويندوز لعمل النقرة
-    const psCommand = `powershell -command "$c = '[DllImport(\\"user32.dll\\")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info); [DllImport(\\"user32.dll\\")] public static extern bool SetCursorPos(int x, int y);'; $type = Add-Type -MemberDefinition $c -Name 'Win32' -Namespace 'Win32Functions' -PassThru; $type::SetCursorPos(${x}, ${y}); $type::mouse_event(0x0002, 0, 0, 0, 0); $type::mouse_event(0x0004, 0, 0, 0, 0);"`;
-
-    exec(psCommand, (err) => {
-      if (err) {
-        console.error("خطأ PowerShell تليجرام:", err);
-        return ctx.reply("❌ فشل تنفيذ نقرة الماوس.");
+        await ctx.replyWithPhoto({ source: gridImgBuffer }, {
+          caption: `📊 الشاشة الحالية بدقتها الأصلية.\n📏 انظر للمسطرة على الحواف لمعرفة أرقام الـ X والـ Y بدقة (الرقم 1 يعني 100 بكسل، 2 يعني 200...)`
+        });
+      } catch (error) {
+        console.error("خطأ تليجرام في السكرين شوت المطور:", error);
+        ctx.reply("❌ فشل التقاط صورة الشاشة الحالية وتوليد الرادار.");
       }
-      ctx.reply(`🎯 تم النقر بنجاح عند الإحداثيات X: ${x} | Y: ${y}`);
-    });
+    }
+
+    // 🟢 2. أمر التحكم بالنقر التلقائي الفوري المحدث بمهلة تجميد (click X Y)
+    else if (text.startsWith('click ')) {
+      const args = text.split(' ').slice(1);
+      const x = parseInt(args[0]);
+      const y = parseInt(args[1]);
+
+      if (isNaN(x) || isNaN(y)) {
+        return ctx.reply("⚠️ صيغة الأمر خاطئة! الاستخدام الصحيح بدون علامات: `click X Y` (مثال: `click 500 400`) ");
+      }
+
+      // تشغيل الكوماند عبر الـ PowerShell الداخلي للنظام لإرسال إشارة الضغط الفعلي
+      const psCommand = `powershell -command "$c = '[DllImport(\\"user32.dll\\")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info); [DllImport(\\"user32.dll\\")] public static extern bool SetCursorPos(int x, int y);'; $type = Add-Type -MemberDefinition $c -Name 'Win32' -Namespace 'Win32Functions' -PassThru; $type::SetCursorPos(${x}, ${y}); $type::mouse_event(0x0002, 0, 0, 0, 0); $type::mouse_event(0x0004, 0, 0, 0, 0);"`;
+
+      exec(psCommand, async (err) => {
+        if (err) {
+          console.error("خطأ PowerShell تليجرام:", err);
+          return ctx.reply("❌ فشل تنفيذ نقرة الماوس على جهاز الكمبيوتر.");
+        }
+
+        // 🛠️ الإصلاح الحاسم والتحديث الفوري المشرط:
+        // ننتظر 400 ملي ثانية (Delay) لكي يفتح نظام الويندوز القائمة والزر الفعلي، ومن ثم نأخذ اللقطة المحدثة
+        setTimeout(async () => {
+          try {
+            const freshGridImg = await generateEdgeGridScreen();
+            await ctx.replyWithPhoto({ source: freshGridImg }, {
+              caption: `🎯 تم تنفيذ النقرة بنجاح عند X: ${x} | Y: ${y}\nالصورة أعلاه تحدّثت فوراً لتعرض لك النتيجة المحدثة على الشاشة بعد الضغط مباشرة!`
+            });
+          } catch (error) {
+            ctx.reply(`🎯 تم النقر بنجاح عند X: ${x} | Y: ${y}، لكن تعذر توليد الصورة التلقائية المحدثة.`);
+          }
+        }, 400); // ⏱️ مهلة الـ 400 ملي ثانية لمنع التقاط الصور القديمة
+      });
+    }
   });
 
-  // تشغيل البوت والبدء في استقبال البيانات
+  // إطلاق البوت والبدء الفعلي في استقبال ومعالجة البيانات
   telegramStation.bot.launch().then(() => {
-    console.log("✈️ بوت التليجرام يعمل الآن بنجاح ويستقبل الأوامر...");
+    console.log("✈️ Telegram Station bot is polling and running successfully...");
   }).catch(err => {
-    console.error("فشل تشغيل بوت التليجرام:", err.message);
+    console.error("Failed launching Telegram engine:", err.message);
   });
+
+  return true; // إرجاع نجاح للسيرفر لتأكيد جودة التوكن وإضاءة المصباح الأخضر
 }
 
-// تصدير دالة المحطة وكائن البيانات لتشغيلها من السيرفر الرئيسي server.js
+// تصدير دوال ومكونات المحطة لربطها بالسيرفر الرئيسي index.js
 module.exports = { initTelegramBot, telegramStation };
