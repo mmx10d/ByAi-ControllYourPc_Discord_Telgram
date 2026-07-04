@@ -1,13 +1,24 @@
 // ========================================================
-// 🛰️ SERVER STATION (index.js) - OFFICIAL FINAL VERSION 🛰️ (Part 1)
+// 🛰️ SERVER STATION (index.js) - PACKAGES PATH REPAIR 🛰️ (Part 1)
 // ========================================================
 
 const express = require('express');
-const screenshot = require('screenshot-desktop');
 const cors = require('cors');
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+
+// 🛠️ الإصلاح الحاسم والأخير: إجبار الـ EXE على قراءة مجلد الـ data الخارجي وتجاهل الـ Temp
+const customModulesPath = path.join(process.cwd(), 'data', 'node_modules');
+if (fs.existsSync(customModulesPath)) {
+  // حقن المسار الجديد في ذاكرة النظام الحية للبرنامج لمنع التعليق
+  module.paths.unshift(customModulesPath);
+  process.env.NODE_PATH = customModulesPath;
+  require('module').Module._initPaths();
+}
+
+// استدعاء مكتبة السكرين شوت بعد تحويل المسار بأمان وضمان استقرارها
+const screenshot = require('screenshot-desktop');
 
 const app = express();
 const PORT = 5000;
@@ -15,6 +26,7 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
+// كائنات التخزين المحدثة لحفظ الحالات النشطة وقوائم المستخدمين
 let appConfig = {
   telegram: { token: '', admin: '', active: false, allowedUsers: [] },
   discord: { token: '', channelId: '', admin: '', active: false, allowedUsers: [] }
@@ -23,8 +35,14 @@ let appConfig = {
 let initTelegramBot = null;
 let initDiscordBot = null;
 
-const checkTGFile = () => fs.existsSync(path.join(__dirname, 'telegramBot.js'));
-const checkDCFile = () => fs.existsSync(path.join(__dirname, 'discordBot.js'));
+console.log("🟢 تم تحويل وتثبيت مسار الحزم المشفرة بجسم الـ data بنجاح باهر...");
+// ========================================================
+// 🛰️ SERVER STATION (index.js) - PACKAGES PATH REPAIR 🛰️ (Part 2)
+// ========================================================
+
+// فحص وجود الملفات البرمجية الحيوية من مجلد التشغيل الفعلي للـ EXE
+const checkTGFile = () => fs.existsSync(path.join(process.cwd(), 'telegramBot.js'));
+const checkDCFile = () => fs.existsSync(path.join(process.cwd(), 'discordBot.js'));
 
 app.get('/api/status', (req, res) => {
   res.json({
@@ -36,7 +54,7 @@ app.get('/api/status', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
 app.get('/api/screenshot', async (req, res) => {
@@ -49,7 +67,7 @@ app.get('/api/screenshot', async (req, res) => {
 });
 
 /**
- * 🎯 مسار النقر وتحريك الماوس المطور حيوياً لـ إحداثيات البكسل المطلق
+ * 🎯 مسار النقر وتحريك الماوس المطور حيوياً لـ إحداثيات البكسل المطلق وطباعة النقرة بالكونسل
  */
 app.post('/api/click', (req, res) => {
   const { x, y, user } = req.body;
@@ -63,6 +81,8 @@ app.post('/api/click', (req, res) => {
   );
 
   if (!isAuthorized) return res.status(403).json({ error: "Access Denied" });
+
+  console.log(`[👉 WEB CONSOLE CLICK] User: ${user} executed a click at coordinates -> X: ${x} | Y: ${y}`);
 
   const command = `powershell -command "$c = '[DllImport(\\"user32.dll\\")] public static extern void mouse_event(int flags, int dx, int dy, int cButtons, int info); [DllImport(\\"user32.dll\\")] public static extern bool SetCursorPos(int x, int y);'; $type = Add-Type -MemberDefinition $c -Name 'Win32' -Namespace 'Win32Functions' -PassThru; $type::SetCursorPos(${x}, ${y}); $type::mouse_event(0x0002, 0, 0, 0, 0); $type::mouse_event(0x0004, 0, 0, 0, 0);"`;
 
@@ -88,13 +108,9 @@ app.post('/api/write', (req, res) => {
 
   if (!isAuthorized) return res.status(403).json({ error: "Access Denied" });
 
-  // فحص حركي: هل يحتوي النص المرسل على حروف عربية؟
   const hasArabic = /[\u0600-\u06FF]/.test(text);
-
-  // تحديد كود اللغة المطلوب حقنه في الويندوز (عربي أو إنجليزي)
   const langCode = hasArabic ? "00000401" : "00000409";
 
-  // أمر PowerShell المزدوج: يغير لغة الكيبورد فوراً، ثم يحاكي ضغطات الحروف بدقة بالغة
   const psCommand = `powershell -command "
     $w = Add-Type -MemberDefinition '[DllImport(\\"user32.dll\\")] public static extern long LoadKeyboardLayout(string pwszKLID, uint Flags);' -Name 'Win32' -Namespace 'Win32Functions' -PassThru;
     $w::LoadKeyboardLayout('${langCode}', 1) | Out-Null;
@@ -108,27 +124,20 @@ app.post('/api/write', (req, res) => {
   });
 });
 
-console.log("⚡ تم بناء مسارات الكيبورد والماوس الذكية للقسم الأول بنجاح ومزامنتها...");
-// ========================================================
-// 🛰️ SERVER STATION (index.js) - OFFICIAL FINAL VERSION 🛰️ (Part 2)
-// ========================================================
-
-/**
- * ✈️ تفعيل وإيقاف محطة تليجرام حيوياً ومزامنة قلب حالة الزر والنصوص والألوان
- */
 app.post('/api/config/telegram', async (req, res) => {
   const { token, admin, users, action } = req.body;
 
-  // 🟥 في حالة طلب العميل إيقاف البوت فوراً وتصفير حالته
   if (action === 'stop') {
-    if (telegramStation && telegramStation.bot) {
-      try { telegramStation.bot.stop(); } catch (e) { }
-    }
+    try {
+      const tgModule = require(path.join(process.cwd(), 'telegramBot.js'));
+      if (tgModule.telegramStation && tgModule.telegramStation.bot) {
+        tgModule.telegramStation.bot.stop();
+      }
+    } catch (e) { }
     appConfig.telegram.active = false;
     return res.json({ success: true, message: "تم إيقاف محطة تليجرام وتصفير العمليات بنجاح! 🛑" });
   }
 
-  // الفحص الصريح الأضمن للتراخيص: هل ملف البوت محذوف؟
   if (!checkTGFile()) {
     return res.status(400).json({ success: false, error: "أنت لم تقم بشراء هذا البوت يرجى شرائه من المالك @mmx10d" });
   }
@@ -136,11 +145,11 @@ app.post('/api/config/telegram', async (req, res) => {
   appConfig.telegram.allowedUsers = Array.isArray(users) ? users : [];
 
   try {
-    delete require.cache[require.resolve('./telegramBot.js')];
-    const tgModule = require('./telegramBot.js');
+    const tgFilePath = path.join(process.cwd(), 'telegramBot.js');
+    delete require.cache[require.resolve(tgFilePath)];
+    const tgModule = require(tgFilePath);
     initTelegramBot = tgModule.initTelegramBot;
 
-    // تشغيل البوت وتمرير إعداداته وقائمته المحفوظة
     const success = await initTelegramBot({ token, admin }, appConfig.telegram.allowedUsers);
     if (success) {
       appConfig.telegram.token = token;
@@ -157,22 +166,20 @@ app.post('/api/config/telegram', async (req, res) => {
   }
 });
 
-/**
- * 💬 تفعيل وإيقاف محطة ديسكورد حيوياً ومزامنة قلب حالة الزر والنصوص والألوان
- */
 app.post('/api/config/discord', async (req, res) => {
   const { token, channelId, admin, users, action } = req.body;
 
-  // 🟥 في حالة طلب العميل إيقاف البوت فوراً وتصفير حالته
   if (action === 'stop') {
-    if (discordStation && discordStation.client) {
-      try { discordStation.client.destroy(); } catch (e) { }
-    }
+    try {
+      const dcModule = require(path.join(process.cwd(), 'discordBot.js'));
+      if (dcModule.discordStation && dcModule.discordStation.client) {
+        dcModule.discordStation.client.destroy();
+      }
+    } catch (e) { }
     appConfig.discord.active = false;
     return res.json({ success: true, message: "تم إيقاف محطة ديسكورد وتدمير جلسة الاتصال بنجاح! 🛑" });
   }
 
-  // الفحص الصريح الأضمن للتراخيص: هل ملف البوت محذوف؟
   if (!checkDCFile()) {
     return res.status(400).json({ success: false, error: "أنت لم تقم بشراء هذا البوت يرجى شرائه من المالك @mmx10d" });
   }
@@ -180,11 +187,11 @@ app.post('/api/config/discord', async (req, res) => {
   appConfig.discord.allowedUsers = Array.isArray(users) ? users : [];
 
   try {
-    delete require.cache[require.resolve('./discordBot.js')];
-    const dcModule = require('./discordBot.js');
+    const dcFilePath = path.join(process.cwd(), 'discordBot.js');
+    delete require.cache[require.resolve(dcFilePath)];
+    const dcModule = require(dcFilePath);
     initDiscordBot = dcModule.initDiscordBot;
 
-    // تشغيل البوت وتمرير إعداداته وقائمته المحفوظة
     const success = await initDiscordBot({ token, channelId, admin }, appConfig.discord.allowedUsers);
     if (success) {
       appConfig.discord.token = token;
@@ -202,9 +209,6 @@ app.post('/api/config/discord', async (req, res) => {
   }
 });
 
-/**
- * 👥 إضافة مستخدم مصرح له وتحديث الذاكرة الحية لكل منصة بشكل مستقل ومحفوظ
- */
 app.post('/api/users/add', (req, res) => {
   const { username, platform } = req.body;
   const cleanUser = username ? username.trim().replace('@', '') : '';
@@ -226,9 +230,6 @@ app.post('/api/users/add', (req, res) => {
   res.status(400).json({ success: false });
 });
 
-/**
- * 🗑️ حذف مستخدم مصرح له حيوياً وتحديث مصفوفات البوتات الحية فور ضغط زر الحذف X
- */
 app.post('/api/users/remove', (req, res) => {
   const { username, platform } = req.body;
 
@@ -243,7 +244,6 @@ app.post('/api/users/remove', (req, res) => {
   res.status(400).json({ success: false });
 });
 
-// إقلاع خادم السيرفر التلقائي المخفي للويندوز الأصلي بوضعية التطبيق المستقل الآمن
 app.listen(PORT, () => {
   console.log(`\n======================================================`);
   console.log(`📡 CORE HUB STATION ACTIVE ON: http://localhost:${PORT}`);

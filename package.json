@@ -8,13 +8,14 @@
   },
   "pkg": {
     "assets": [
-      "index.html",
-      "telegramBot.js",
-      "discordBot.js"
+      "index.html"
+    ],
+    "options": [
+      "bytecode"
     ]
   },
   "keywords": [],
-  "author": "",
+  "author": "MMX10d",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
